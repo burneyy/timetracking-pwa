@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import './Timer.css';
 
 // IndexedDB setup
 const DB_NAME = 'timer-app';
@@ -10,6 +11,7 @@ let db: IDBDatabase | null = null;
 interface Timer {
     id: number;
     startDate: Date;
+    stopDate: Date | null;
     running: boolean;
 }
 
@@ -116,8 +118,10 @@ function App(): JSX.Element {
 
     const handleStop = () => {
         setRunning(false);
+        setStartDate(null);
         if (startDate) {
-            const timer: Omit<Timer, 'id'> = { startDate, running: false };
+            const stopDate = new Date();
+            const timer: Omit<Timer, 'id'> = { startDate, stopDate, running: false };
             saveTimer(timer).then(() => {
                 const loadTimers = async () => {
                     const timers = await getTimers();
@@ -142,6 +146,20 @@ function App(): JSX.Element {
         loadTimers();
     };
 
+    const formatTimer = (timer: Timer): string => {
+        const startDateString = formatDate(timer.startDate);
+        if (timer.stopDate) {
+            const stopDateString = formatDate(timer.stopDate);
+            if (timer.startDate.getDate() === timer.stopDate.getDate() && timer.startDate.getMonth() === timer.stopDate.getMonth() && timer.startDate.getFullYear() === timer.stopDate.getFullYear()) {
+                return `${startDateString} - ${stopDateString.split(' ').pop()}`;
+            } else {
+                return `${startDateString} - ${stopDateString}`;
+            }
+        } else {
+            return `${startDateString} - running`;
+        }
+    };
+
     const formatDate = (date: Date): string => {
         const dayOfWeek = date.toLocaleString('de-DE', { weekday: 'short' });
         const day = date.getDate().toString().padStart(2, '0');
@@ -153,16 +171,16 @@ function App(): JSX.Element {
     };
 
     return (
-        <div>
-            {startDate && <h1>Started at: {formatDate(startDate)}</h1>}
+        <div className="App">
+            {startDate && <h2>{formatTimer({ id: 0, startDate, stopDate: null, running: true })}</h2>}
             <button onClick={handleStart}>Start</button>
             <button onClick={handleStop}>Stop</button>
             <button onClick={handleReset}>Reset</button>
-            <h2>Stored Timers:</h2>
+            <h3>Stored Timers:</h3>
             <ul>
                 {storedTimers.map((timer) => (
                     <li key={timer.id}>
-                        {formatDate(timer.startDate)}
+                        {formatTimer(timer)}
                         <button onClick={() => handleDelete(timer.id)}>Delete</button>
                     </li>
                 ))}
