@@ -12,3 +12,7 @@ and push it to a `gh-pages` branch.
 ## Further notes
 Getting this app to work with `gh-pages` was done using
 the following guide: https://github.com/gitname/react-gh-pages
+
+### Useful links
+- https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
+- https://web.dev/articles/add-manifest
