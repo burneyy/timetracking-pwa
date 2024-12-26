@@ -2,6 +2,7 @@
   "name": "timesheet-pwa",
   "private": true,
   "version": "0.0.0",
+  "homepage": "https://burneyy.github.io/timetracking-pwa",
   "type": "module",
   "scripts": {
     "dev": "vite",
