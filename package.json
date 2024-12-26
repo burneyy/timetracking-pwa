@@ -5,6 +5,8 @@
   "homepage": "https://burneyy.github.io/timetracking-pwa",
   "type": "module",
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
