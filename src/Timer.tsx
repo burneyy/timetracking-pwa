@@ -94,7 +94,6 @@ const deleteTimer = async (id: number): Promise<void> => {
 };
 
 function App(): JSX.Element {
-    const [running, setRunning] = useState(false);
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [storedTimers, setStoredTimers] = useState<Timer[]>([]);
 
@@ -107,18 +106,35 @@ function App(): JSX.Element {
     }, []);
 
     useEffect(() => {
-        if (running && !startDate) {
-            setStartDate(new Date());
+        const storedStartDate = localStorage.getItem('startDate');
+        if (storedStartDate) {
+            const startDate = new Date(storedStartDate);
+            getTimers().then((timers) => {
+                const existingTimer = timers.find((timer) => timer.startDate.toISOString() === storedStartDate);
+                if (existingTimer) {
+                    // Timer has already been stopped, do nothing
+                } else {
+                    setStartDate(startDate);
+                }
+            });
         }
-    }, [running, startDate]);
+    }, []);
+
+    useEffect(() => {
+        const storedStartDate = localStorage.getItem('startDate');
+        if (storedStartDate) {
+            const startDate = new Date(storedStartDate);
+            setStartDate(startDate);
+        }
+    }, []);
 
     const handleStart = () => {
-        setRunning(true);
+        const startDate = new Date();
+        setStartDate(startDate);
+        localStorage.setItem('startDate', startDate.toISOString());
     };
 
     const handleStop = () => {
-        setRunning(false);
-        setStartDate(null);
         if (startDate) {
             const stopDate = new Date();
             const timer: Omit<Timer, 'id'> = { startDate, stopDate, running: false };
@@ -130,11 +146,12 @@ function App(): JSX.Element {
                 loadTimers();
             });
         }
+        handleReset()
     };
 
     const handleReset = () => {
-        setRunning(false);
         setStartDate(null);
+        localStorage.removeItem('startDate');
     };
 
     const handleDelete = async (id: number) => {
