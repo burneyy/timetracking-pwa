@@ -276,6 +276,24 @@ h3 {
   margin-bottom: 0;
 }
 
+.export-summary {
+  background: #f8fafb;
+  border: 1px solid #dfe7ed;
+  border-radius: 8px;
+  color: #667481;
+  padding: 20px;
+}
+
+.export-summary strong {
+  color: #17202a;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.export-summary p {
+  margin-bottom: 0;
+}
+
 .project-form {
   align-items: end;
   display: grid;
