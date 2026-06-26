@@ -24,10 +24,20 @@ npm run dev
 
 ```bash
 npm test
+npm run lint
 npm run build
 ```
 
-Production builds generate a web app manifest and service worker so the static app shell can be cached for offline use after the first load.
+Production builds generate a web app manifest, PWA icons, and service worker so the static app shell can be cached for offline use after the first load.
+
+## Static Deployment
+
+```bash
+npm run build
+npm run preview
+```
+
+Deploy the generated `dist/` directory to a static host. For install/offline PWA testing, serve the app over HTTPS or `localhost`; the service worker caches the app shell after the first successful visit.
 
 ## Data Storage
 
