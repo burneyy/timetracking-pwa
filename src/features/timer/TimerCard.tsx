@@ -7,6 +7,7 @@ import { RunningTimerDisplay } from './RunningTimerDisplay'
 import { TaskInput } from './TaskInput'
 import { getRunningTimer, startTimer, stopTimer } from './timerService'
 import { listAllProjects, listActiveProjects } from '../projects/projectService'
+import { listTaskSuggestions } from '../entries/entryService'
 
 export function TimerCard() {
   const activeProjects = useLiveQuery(() => listActiveProjects(), [])
@@ -16,6 +17,7 @@ export function TimerCard() {
   const [task, setTask] = useState('')
   const [error, setError] = useState<string>()
   const [saving, setSaving] = useState(false)
+  const taskSuggestions = useLiveQuery(() => listTaskSuggestions(projectId), [projectId]) ?? []
   const projectsById = useMemo(() => new Map(allProjects?.map((project) => [project.id, project])), [allProjects])
   const hasProjects = (activeProjects?.length ?? 0) > 0
 
@@ -64,7 +66,12 @@ export function TimerCard() {
 
       <form className="timer-form-grid" onSubmit={handleStart}>
         <ProjectSelect disabled={saving} onChange={setProjectId} value={projectId} />
-        <TaskInput disabled={saving || !hasProjects} onChange={setTask} value={task} />
+        <TaskInput
+          disabled={saving || !hasProjects}
+          onChange={setTask}
+          suggestions={taskSuggestions}
+          value={task}
+        />
         <Button disabled={saving || !hasProjects} type="submit" variant="primary">
           <Play size={18} aria-hidden="true" />
           {runningTimer ? 'Switch' : 'Start'}

@@ -5,6 +5,7 @@ import {
   createManualEntry,
   deleteEntry,
   listEntriesByDateRange,
+  listTaskSuggestions,
   listTodayEntries,
   updateEntry,
 } from './entryService'
@@ -202,5 +203,97 @@ describe('entryService', () => {
     await deleteEntry(entryId)
 
     await expect(db.timeEntries.count()).resolves.toBe(0)
+  })
+
+  it('suggests recent tasks with project-specific matches first', async () => {
+    const clientProjectId = await createProject('Client')
+    const adminProjectId = await createProject('Admin')
+    await db.timeEntries.bulkAdd([
+      {
+        id: '1',
+        projectId: adminProjectId,
+        task: 'Review',
+        startAt: '2026-06-26T11:00:00.000Z',
+        endAt: '2026-06-26T11:15:00.000Z',
+        durationMinutes: 15,
+        createdAt: '2026-06-26T11:15:00.000Z',
+        updatedAt: '2026-06-26T11:15:00.000Z',
+      },
+      {
+        id: '2',
+        projectId: clientProjectId,
+        task: 'Implementation',
+        startAt: '2026-06-26T12:00:00.000Z',
+        endAt: '2026-06-26T12:30:00.000Z',
+        durationMinutes: 30,
+        createdAt: '2026-06-26T12:30:00.000Z',
+        updatedAt: '2026-06-26T12:30:00.000Z',
+      },
+      {
+        id: '3',
+        projectId: adminProjectId,
+        task: 'review',
+        startAt: '2026-06-26T13:00:00.000Z',
+        endAt: '2026-06-26T13:15:00.000Z',
+        durationMinutes: 15,
+        createdAt: '2026-06-26T13:15:00.000Z',
+        updatedAt: '2026-06-26T13:15:00.000Z',
+      },
+    ])
+
+    await expect(listTaskSuggestions(clientProjectId)).resolves.toEqual(['Implementation', 'review'])
+  })
+
+  it('falls back to global task suggestions after project matches', async () => {
+    const clientProjectId = await createProject('Client')
+    const adminProjectId = await createProject('Admin')
+    await db.timeEntries.bulkAdd([
+      {
+        id: '1',
+        projectId: clientProjectId,
+        task: ' Implementation ',
+        startAt: '2026-06-26T10:00:00.000Z',
+        endAt: '2026-06-26T10:30:00.000Z',
+        durationMinutes: 30,
+        createdAt: '2026-06-26T10:30:00.000Z',
+        updatedAt: '2026-06-26T10:30:00.000Z',
+      },
+      {
+        id: '2',
+        projectId: adminProjectId,
+        task: 'Deployment',
+        startAt: '2026-06-26T11:00:00.000Z',
+        endAt: '2026-06-26T11:30:00.000Z',
+        durationMinutes: 30,
+        createdAt: '2026-06-26T11:30:00.000Z',
+        updatedAt: '2026-06-26T11:30:00.000Z',
+      },
+      {
+        id: '3',
+        projectId: adminProjectId,
+        task: 'Review',
+        startAt: '2026-06-26T12:00:00.000Z',
+        endAt: '2026-06-26T12:30:00.000Z',
+        durationMinutes: 30,
+        createdAt: '2026-06-26T12:30:00.000Z',
+        updatedAt: '2026-06-26T12:30:00.000Z',
+      },
+      {
+        id: '4',
+        projectId: adminProjectId,
+        task: 'implementation',
+        startAt: '2026-06-26T13:00:00.000Z',
+        endAt: '2026-06-26T13:30:00.000Z',
+        durationMinutes: 30,
+        createdAt: '2026-06-26T13:30:00.000Z',
+        updatedAt: '2026-06-26T13:30:00.000Z',
+      },
+    ])
+
+    await expect(listTaskSuggestions(clientProjectId, 3)).resolves.toEqual([
+      'Implementation',
+      'Review',
+      'Deployment',
+    ])
   })
 })

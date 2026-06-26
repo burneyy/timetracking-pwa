@@ -37,6 +37,11 @@ select:disabled {
   opacity: 0.62;
 }
 
+:focus-visible {
+  outline: 3px solid rgba(28, 107, 93, 0.35);
+  outline-offset: 2px;
+}
+
 #root {
   min-height: 100vh;
 }
@@ -108,7 +113,9 @@ select:disabled {
 .main-content {
   display: grid;
   gap: 20px;
+  max-width: 1180px;
   padding: 32px;
+  width: 100%;
 }
 
 .timer-card,
@@ -234,6 +241,15 @@ h3 {
   justify-content: center;
   min-height: 42px;
   padding: 8px 14px;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease,
+    transform 120ms ease;
+}
+
+.button:not(:disabled):hover {
+  transform: translateY(-1px);
 }
 
 .button-primary {
@@ -306,6 +322,7 @@ h3 {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
+  min-width: 0;
 }
 
 .form-error {
@@ -429,7 +446,9 @@ h3 {
 
 .row-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
+  justify-content: flex-end;
 }
 
 @media (max-width: 760px) {
@@ -456,6 +475,15 @@ h3 {
     padding: 16px;
   }
 
+  .brand {
+    margin-bottom: 16px;
+  }
+
+  .timer-card,
+  .panel {
+    padding: 18px;
+  }
+
   .timer-card-header,
   .section-header,
   .timer-form-grid,
@@ -478,5 +506,10 @@ h3 {
   .entry-time {
     min-width: 0;
     text-align: left;
+  }
+
+  .form-actions,
+  .row-actions {
+    justify-content: flex-start;
   }
 }

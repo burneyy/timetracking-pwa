@@ -73,6 +73,30 @@ export function listTodayEntries(now = new Date()) {
   return listEntriesByDateRange(startOfLocalDay(now), startOfNextLocalDay(now))
 }
 
+export async function listTaskSuggestions(projectId?: string, limit = 8) {
+  const entries = await listAllEntries()
+  const suggestions = new Map<string, string>()
+
+  function addSuggestion(task: string) {
+    const trimmedTask = task.trim()
+    const key = trimmedTask.toLowerCase()
+
+    if (!trimmedTask || suggestions.has(key) || suggestions.size >= limit) return
+
+    suggestions.set(key, trimmedTask)
+  }
+
+  if (projectId) {
+    entries
+      .filter((entry) => entry.projectId === projectId)
+      .forEach((entry) => addSuggestion(entry.task))
+  }
+
+  entries.forEach((entry) => addSuggestion(entry.task))
+
+  return [...suggestions.values()]
+}
+
 export async function createManualEntry(input: EntryInput): Promise<string> {
   const now = new Date().toISOString()
   const validated = await validateEntryInput(input)
