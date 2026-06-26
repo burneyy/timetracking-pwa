@@ -16,7 +16,7 @@ export function TimerCard() {
       </div>
       <div className="timer-form-grid">
         <ProjectSelect />
-        <TaskInput />
+        <TaskInput disabled />
         <Button disabled variant="primary">
           <Play size={18} aria-hidden="true" />
           Start
