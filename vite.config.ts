@@ -57,4 +57,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
   },
+  server: {
+    allowedHosts: ['openclaw.tailde9b5.ts.net'],
+  },
 })
