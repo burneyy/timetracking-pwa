@@ -34,6 +34,20 @@ export function isToday(value: string, now = new Date()): boolean {
   return isSameDay(parseISO(value), now)
 }
 
+export function startOfLocalDay(value = new Date()): Date {
+  const date = new Date(value)
+  date.setHours(0, 0, 0, 0)
+
+  return date
+}
+
+export function startOfNextLocalDay(value = new Date()): Date {
+  const date = startOfLocalDay(value)
+  date.setDate(date.getDate() + 1)
+
+  return date
+}
+
 export function toIsoFromDateTimeLocal(value: string): string {
   return new Date(value).toISOString()
 }

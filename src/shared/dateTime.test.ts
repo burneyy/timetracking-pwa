@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calculateDurationMinutes, formatDuration } from './dateTime'
+import { calculateDurationMinutes, formatDuration, startOfLocalDay, startOfNextLocalDay } from './dateTime'
 
 describe('dateTime helpers', () => {
   it('rounds duration to the nearest minute', () => {
@@ -15,5 +15,12 @@ describe('dateTime helpers', () => {
     expect(formatDuration(45)).toBe('45m')
     expect(formatDuration(120)).toBe('2h')
     expect(formatDuration(135)).toBe('2h 15m')
+  })
+
+  it('finds local day boundaries', () => {
+    const date = new Date(2026, 5, 26, 13, 30, 45, 123)
+
+    expect(startOfLocalDay(date)).toEqual(new Date(2026, 5, 26, 0, 0, 0, 0))
+    expect(startOfNextLocalDay(date)).toEqual(new Date(2026, 5, 27, 0, 0, 0, 0))
   })
 })

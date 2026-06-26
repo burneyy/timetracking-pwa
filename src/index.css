@@ -326,6 +326,47 @@ h3 {
   padding: 10px;
 }
 
+.entry-row {
+  align-items: center;
+  background: #f9fbfc;
+  border: 1px solid #e0e7ec;
+  border-radius: 8px;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 12px;
+}
+
+.entry-project {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  min-width: 0;
+}
+
+.entry-project strong,
+.entry-project span,
+.entry-time span,
+.entry-time strong {
+  display: block;
+}
+
+.entry-project strong,
+.entry-project span {
+  overflow-wrap: anywhere;
+}
+
+.entry-project span,
+.entry-time span {
+  color: #687686;
+  font-size: 0.88rem;
+}
+
+.entry-time {
+  min-width: 120px;
+  text-align: right;
+}
+
 .project-row.editing {
   display: block;
 }
@@ -395,5 +436,15 @@ h3 {
   .timer-card-header,
   .section-header {
     flex-direction: column;
+  }
+
+  .entry-row {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .entry-time {
+    min-width: 0;
+    text-align: left;
   }
 }
