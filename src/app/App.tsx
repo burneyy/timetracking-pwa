@@ -44,8 +44,8 @@ function App() {
     if (activeView === 'entries') {
       return (
         <>
-          <EntryList />
           <EntryForm />
+          <EntryList scope="all" />
         </>
       )
     }

@@ -14,7 +14,14 @@ export function assertValidDateRange(startAt: string, endAt: string): Validation
     return { valid: false, message: 'Start and end times are required.' }
   }
 
-  if (new Date(endAt).getTime() < new Date(startAt).getTime()) {
+  const startTime = new Date(startAt).getTime()
+  const endTime = new Date(endAt).getTime()
+
+  if (Number.isNaN(startTime) || Number.isNaN(endTime)) {
+    return { valid: false, message: 'Start and end times must be valid.' }
+  }
+
+  if (endTime <= startTime) {
     return { valid: false, message: 'End time must be after the start time.' }
   }
 

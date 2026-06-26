@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { calculateDurationMinutes, formatDuration, startOfLocalDay, startOfNextLocalDay } from './dateTime'
+import {
+  calculateDurationMinutes,
+  formatDuration,
+  startOfLocalDay,
+  startOfNextLocalDay,
+  toIsoFromDateTimeLocal,
+} from './dateTime'
 
 describe('dateTime helpers', () => {
   it('rounds duration to the nearest minute', () => {
@@ -22,5 +28,12 @@ describe('dateTime helpers', () => {
 
     expect(startOfLocalDay(date)).toEqual(new Date(2026, 5, 26, 0, 0, 0, 0))
     expect(startOfNextLocalDay(date)).toEqual(new Date(2026, 5, 27, 0, 0, 0, 0))
+  })
+
+  it('converts datetime-local values to ISO strings', () => {
+    expect(toIsoFromDateTimeLocal('2026-06-26T10:15')).toBe(
+      new Date('2026-06-26T10:15').toISOString(),
+    )
+    expect(() => toIsoFromDateTimeLocal('not-a-date')).toThrow('valid')
   })
 })

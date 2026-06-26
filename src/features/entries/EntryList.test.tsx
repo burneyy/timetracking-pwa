@@ -88,4 +88,44 @@ describe('EntryList', () => {
     await waitFor(() => expect(screen.getByText('Archived Client')).toBeInTheDocument())
     expect(screen.queryByText('Unknown project')).not.toBeInTheDocument()
   })
+
+  it('can render all entries instead of only today', async () => {
+    const projectId = await createProject('Client')
+    const today = new Date()
+    today.setHours(9, 0, 0, 0)
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+
+    await db.timeEntries.bulkAdd([
+      {
+        id: 'today',
+        projectId,
+        task: 'Today',
+        startAt: today.toISOString(),
+        endAt: new Date(today.getTime() + 30 * 60_000).toISOString(),
+        durationMinutes: 30,
+        createdAt: today.toISOString(),
+        updatedAt: today.toISOString(),
+      },
+      {
+        id: 'yesterday',
+        projectId,
+        task: 'Yesterday',
+        startAt: yesterday.toISOString(),
+        endAt: new Date(yesterday.getTime() + 15 * 60_000).toISOString(),
+        durationMinutes: 15,
+        createdAt: yesterday.toISOString(),
+        updatedAt: yesterday.toISOString(),
+      },
+    ])
+
+    render(<EntryList scope="all" />)
+
+    const list = await screen.findByRole('list', { name: 'All time entries' })
+
+    expect(within(list).getAllByRole('listitem')).toHaveLength(2)
+    expect(screen.getByText('Today')).toBeInTheDocument()
+    expect(screen.getByText('Yesterday')).toBeInTheDocument()
+    expect(screen.getByText('45m')).toBeInTheDocument()
+  })
 })

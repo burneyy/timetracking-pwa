@@ -1,6 +1,11 @@
-import { EmptyState } from '../../shared/ui/EmptyState'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { listActiveProjects } from '../projects/projectService'
+import { EntryEditor } from './EntryEditor'
+import { createManualEntry } from './entryService'
 
 export function EntryForm() {
+  const projects = useLiveQuery(() => listActiveProjects(), []) ?? []
+
   return (
     <section className="panel">
       <div className="section-header">
@@ -9,7 +14,13 @@ export function EntryForm() {
           <h2>Manual entries</h2>
         </div>
       </div>
-      <EmptyState title="Manual entry editing pending" message="This view is scheduled for milestone 5." />
+      <EntryEditor
+        onSubmit={async (input) => {
+          await createManualEntry(input)
+        }}
+        projects={projects}
+        submitLabel="Create"
+      />
     </section>
   )
 }

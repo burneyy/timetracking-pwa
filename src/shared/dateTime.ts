@@ -49,5 +49,11 @@ export function startOfNextLocalDay(value = new Date()): Date {
 }
 
 export function toIsoFromDateTimeLocal(value: string): string {
-  return new Date(value).toISOString()
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    throw new Error('Start and end times must be valid.')
+  }
+
+  return date.toISOString()
 }
