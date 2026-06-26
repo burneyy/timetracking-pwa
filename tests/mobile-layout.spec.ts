@@ -35,22 +35,32 @@ test.describe('mobile layout', () => {
     }
   })
 
-  test('keeps the mobile navigation header compact across views', async ({ page }) => {
+  test('keeps the mobile navigation fixed at the bottom across views', async ({ page }) => {
     for (const view of views) {
       await selectView(page, view)
 
       await expect
         .poll(() =>
           page.evaluate(() => {
-            const nav = document.querySelector('.nav-list')!
             const sidebar = document.querySelector('.sidebar')!
+            const main = document.querySelector('.main-content')!
+            const sidebarRect = sidebar.getBoundingClientRect()
 
-            return Math.round(
-              sidebar.getBoundingClientRect().bottom - nav.getBoundingClientRect().bottom,
-            )
+            return {
+              bottomOffset: Math.round(window.innerHeight - sidebarRect.bottom),
+              contentPaddingCoversNav:
+                Number.parseFloat(getComputedStyle(main).paddingBottom) >= sidebarRect.height + 16,
+              position: getComputedStyle(sidebar).position,
+              topIsInBottomHalf: sidebarRect.top > window.innerHeight / 2,
+            }
           }),
         )
-        .toBeLessThanOrEqual(24)
+        .toEqual({
+          bottomOffset: 0,
+          contentPaddingCoversNav: true,
+          position: 'fixed',
+          topIsInBottomHalf: true,
+        })
     }
   })
 

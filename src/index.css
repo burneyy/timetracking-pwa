@@ -498,36 +498,51 @@ h3 {
 @media (max-width: 760px) {
   .app-shell {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
   }
 
   .sidebar {
-    border-bottom: 1px solid #e3e7eb;
     border-right: 0;
+    border-top: 1px solid #dce3e8;
+    bottom: 0;
+    box-shadow: 0 -12px 30px rgba(26, 36, 47, 0.08);
+    left: 0;
     min-width: 0;
-    padding: 16px;
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+    position: fixed;
+    right: 0;
+    z-index: 20;
+  }
+
+  .brand {
+    display: none;
   }
 
   .nav-list {
     display: grid;
+    gap: 4px;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     max-width: 100%;
     overflow-x: visible;
   }
 
   .nav-item {
-    gap: 6px;
+    flex-direction: column;
+    font-size: 0.78rem;
+    gap: 4px;
     justify-content: center;
+    min-height: 56px;
     min-width: 0;
-    padding-inline: 8px;
+    padding: 6px 4px;
+    text-align: center;
+  }
+
+  .nav-item svg {
+    flex: 0 0 auto;
   }
 
   .main-content {
-    padding: 16px;
-  }
-
-  .brand {
-    margin-bottom: 16px;
+    padding: 16px 16px calc(96px + env(safe-area-inset-bottom));
   }
 
   .timer-card,
@@ -572,5 +587,20 @@ h3 {
   .form-actions,
   .row-actions {
     justify-content: flex-start;
+  }
+}
+
+@media (max-width: 420px) {
+  .sidebar {
+    padding-inline: 8px;
+  }
+
+  .nav-list {
+    gap: 2px;
+  }
+
+  .nav-item {
+    font-size: 0.74rem;
+    padding-inline: 2px;
   }
 }
