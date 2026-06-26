@@ -48,6 +48,35 @@ export function startOfNextLocalDay(value = new Date()): Date {
   return date
 }
 
+export function startOfLocalWeek(value = new Date()): Date {
+  const date = startOfLocalDay(value)
+  const daysSinceMonday = (date.getDay() + 6) % 7
+  date.setDate(date.getDate() - daysSinceMonday)
+
+  return date
+}
+
+export function startOfNextLocalWeek(value = new Date()): Date {
+  const date = startOfLocalWeek(value)
+  date.setDate(date.getDate() + 7)
+
+  return date
+}
+
+export function startOfLocalMonth(value = new Date()): Date {
+  const date = startOfLocalDay(value)
+  date.setDate(1)
+
+  return date
+}
+
+export function startOfNextLocalMonth(value = new Date()): Date {
+  const date = startOfLocalMonth(value)
+  date.setMonth(date.getMonth() + 1)
+
+  return date
+}
+
 export function toIsoFromDateTimeLocal(value: string): string {
   const date = new Date(value)
 

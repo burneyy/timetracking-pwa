@@ -300,6 +300,30 @@ h3 {
   padding: 20px;
 }
 
+.export-actions {
+  align-items: end;
+  display: flex;
+  gap: 10px;
+}
+
+.export-range-field {
+  min-width: 180px;
+}
+
+.export-custom-range {
+  align-items: end;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(160px, 220px));
+  margin-bottom: 18px;
+}
+
+.export-summary-error {
+  background: #fff7f5;
+  border-color: #ffc9c1;
+  color: #9d2b1f;
+}
+
 .export-summary strong {
   color: #17202a;
   display: block;
@@ -488,7 +512,8 @@ h3 {
   .section-header,
   .timer-form-grid,
   .project-form,
-  .entry-editor {
+  .entry-editor,
+  .export-custom-range {
     align-items: stretch;
     grid-template-columns: 1fr;
   }
@@ -496,6 +521,15 @@ h3 {
   .timer-card-header,
   .section-header {
     flex-direction: column;
+  }
+
+  .export-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .export-range-field {
+    min-width: 0;
   }
 
   .entry-row {

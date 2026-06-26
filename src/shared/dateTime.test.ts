@@ -3,7 +3,11 @@ import {
   calculateDurationMinutes,
   formatDuration,
   startOfLocalDay,
+  startOfLocalMonth,
+  startOfLocalWeek,
   startOfNextLocalDay,
+  startOfNextLocalMonth,
+  startOfNextLocalWeek,
   toIsoFromDateTimeLocal,
 } from './dateTime'
 
@@ -28,6 +32,20 @@ describe('dateTime helpers', () => {
 
     expect(startOfLocalDay(date)).toEqual(new Date(2026, 5, 26, 0, 0, 0, 0))
     expect(startOfNextLocalDay(date)).toEqual(new Date(2026, 5, 27, 0, 0, 0, 0))
+  })
+
+  it('finds local week boundaries starting on Monday', () => {
+    const date = new Date(2026, 5, 26, 13, 30, 45, 123)
+
+    expect(startOfLocalWeek(date)).toEqual(new Date(2026, 5, 22, 0, 0, 0, 0))
+    expect(startOfNextLocalWeek(date)).toEqual(new Date(2026, 5, 29, 0, 0, 0, 0))
+  })
+
+  it('finds local month boundaries', () => {
+    const date = new Date(2026, 5, 26, 13, 30, 45, 123)
+
+    expect(startOfLocalMonth(date)).toEqual(new Date(2026, 5, 1, 0, 0, 0, 0))
+    expect(startOfNextLocalMonth(date)).toEqual(new Date(2026, 6, 1, 0, 0, 0, 0))
   })
 
   it('converts datetime-local values to ISO strings', () => {
