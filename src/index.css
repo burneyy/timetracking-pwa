@@ -202,11 +202,51 @@ select:disabled {
   max-width: 1180px;
   min-width: 0;
   padding: 32px;
+  touch-action: pan-y;
   width: 100%;
 }
 
-.main-content > [role='tabpanel'] {
+.view-panel {
   min-width: 0;
+}
+
+.view-panel-next {
+  animation: page-slide-next 180ms ease-out both;
+}
+
+.view-panel-previous {
+  animation: page-slide-previous 180ms ease-out both;
+}
+
+@keyframes page-slide-next {
+  from {
+    opacity: 0.72;
+    transform: translateX(28px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes page-slide-previous {
+  from {
+    opacity: 0.72;
+    transform: translateX(-28px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .view-panel-next,
+  .view-panel-previous {
+    animation: none;
+  }
 }
 
 .timer-card,
