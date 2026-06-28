@@ -56,6 +56,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     exclude: [...configDefaults.exclude, 'tests/**'],
+    isolate: false,
     setupFiles: './src/test/setup.ts',
   },
   server: {
