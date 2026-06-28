@@ -12,12 +12,13 @@ describe('ProjectSelect', () => {
   })
 
   it('keeps an uncontrolled active project selection', async () => {
-    const projectId = await createProject('Client')
+    const projectId = await createProject('Client Project', undefined, 'Client')
 
     render(<ProjectSelect />)
 
     const select = screen.getByRole<HTMLSelectElement>('combobox', { name: 'Project' })
     await waitFor(() => expect(select).toBeEnabled())
+    expect(screen.getByRole('option', { name: 'Client' })).toBeInTheDocument()
 
     await userEvent.selectOptions(select, projectId)
 
@@ -25,7 +26,7 @@ describe('ProjectSelect', () => {
   })
 
   it('removes archived projects from the active selector and clears stale selections', async () => {
-    const projectId = await createProject('Client')
+    const projectId = await createProject('Client Project', undefined, 'Client')
 
     render(<ProjectSelect />)
 

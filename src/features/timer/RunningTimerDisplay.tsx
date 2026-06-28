@@ -29,18 +29,18 @@ export function RunningTimerDisplay({ projectsById, runningTimer }: RunningTimer
   }
 
   const elapsedMinutes = Math.round(Math.max(0, now - new Date(runningTimer.startedAt).getTime()) / 60_000)
-  const projectName = projectsById?.get(runningTimer.projectId)?.name ?? 'Unknown project'
+  const projectAlias = projectsById?.get(runningTimer.projectId)?.alias ?? 'Unknown project'
   const elapsedDuration = formatDuration(elapsedMinutes)
 
   return (
     <div
-      aria-label={`Running timer: ${projectName}, ${runningTimer.task}, ${elapsedDuration} elapsed`}
+      aria-label={`Running timer: ${projectAlias}, ${runningTimer.task}, ${elapsedDuration} elapsed`}
       className="running-display active"
       role="timer"
     >
       <Clock size={20} aria-hidden="true" />
       <span>
-        {projectName} · {runningTimer.task} · {elapsedDuration}
+        {projectAlias} · {runningTimer.task} · {elapsedDuration}
       </span>
     </div>
   )

@@ -21,8 +21,8 @@ describe('ExportView', () => {
     expect(screen.getByText('Preparing export')).toBeInTheDocument()
   })
 
-  it('downloads entries with archived project names from live data', async () => {
-    const projectId = await createProject('Müller, Archived')
+  it('downloads entries with archived project names and aliases from live data', async () => {
+    const projectId = await createProject('Müller, Archived', undefined, 'MA')
     await archiveProject(projectId)
     await db.timeEntries.add({
       id: 'entry-1',
@@ -48,6 +48,7 @@ describe('ExportView', () => {
     const text = await blob.text()
 
     expect(text).toContain('"Müller, Archived"')
+    expect(text).toContain(',MA,')
     expect(text).toContain('Review export')
     expect(click).toHaveBeenCalled()
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:csv')

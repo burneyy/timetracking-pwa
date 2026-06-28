@@ -52,7 +52,7 @@ export function EntryRow({ entry, project, projects = [] }: EntryRowProps) {
           style={{ backgroundColor: project?.color ?? '#8a97a3' }}
         />
         <div>
-          <strong>{project?.name ?? 'Unknown project'}</strong>
+          <strong>{project?.alias ?? 'Unknown project'}</strong>
           <span>{entry.task}</span>
         </div>
       </div>

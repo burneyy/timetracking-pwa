@@ -2,7 +2,7 @@ import { formatDateInput, formatTime } from '../../shared/dateTime'
 import type { TimeEntry } from '../entries/entryTypes'
 import type { Project } from '../projects/projectTypes'
 
-const header = ['date', 'project', 'task', 'start', 'end', 'duration_minutes']
+const header = ['date', 'project_name', 'project_alias', 'task', 'start', 'end', 'duration_minutes']
 
 function escapeCsvCell(value: string | number): string {
   const stringValue = String(value)
@@ -24,18 +24,21 @@ export function exportEntriesToCsv(entries: TimeEntry[], projects: Project[]): s
   const projectsById = new Map(projects.map((project) => [project.id, project]))
   const lines = [
     header.join(','),
-    ...entries.map((entry) =>
-      [
+    ...entries.map((entry) => {
+      const project = projectsById.get(entry.projectId)
+
+      return [
         formatLocalDate(entry.startAt),
-        projectsById.get(entry.projectId)?.name ?? 'Unknown project',
+        project?.name ?? 'Unknown project',
+        project?.alias ?? 'Unknown project',
         entry.task,
         formatLocalTime(entry.startAt),
         formatLocalTime(entry.endAt),
         entry.durationMinutes,
       ]
         .map(escapeCsvCell)
-        .join(','),
-    ),
+        .join(',')
+    }),
   ]
 
   return `${lines.join('\n')}\n`

@@ -40,7 +40,7 @@ export function ProjectSelect({ disabled = false, onChange, value }: ProjectSele
         <option value="">{hasProjects ? 'Choose a project' : 'No projects yet'}</option>
         {projects?.map((project) => (
           <option key={project.id} value={project.id}>
-            {project.name}
+            {project.alias}
           </option>
         ))}
       </select>

@@ -7,6 +7,7 @@ const projects: Project[] = [
   {
     id: 'project-1',
     name: 'Client, GmbH',
+    alias: 'CG',
     color: '#1c6b5d',
     archived: false,
     createdAt: '2026-06-26T08:00:00.000Z',
@@ -15,6 +16,7 @@ const projects: Project[] = [
   {
     id: 'project-2',
     name: 'Archivierte Prüfung',
+    alias: 'AP',
     color: '#8a97a3',
     archived: true,
     createdAt: '2026-06-25T08:00:00.000Z',
@@ -53,10 +55,12 @@ describe('csvExport', () => {
   it('exports entries with escaped project and task values', () => {
     const csv = exportEntriesToCsv(entries, projects)
 
-    expect(csv).toContain('date,project,task,start,end,duration_minutes')
+    expect(csv).toContain('date,project_name,project_alias,task,start,end,duration_minutes')
     expect(csv).toContain('"Client, GmbH"')
+    expect(csv).toContain(',CG,')
     expect(csv).toContain('"Fix ""CSV"" export\nwith umlauts äöü"')
     expect(csv).toContain('Archivierte Prüfung')
+    expect(csv).toContain(',AP,')
     expect(csv).toContain('"Review\r\nsecond line"')
     expect(csv).toContain(',90')
     expect(csv.endsWith('\n')).toBe(true)

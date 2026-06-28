@@ -42,7 +42,9 @@ function ProjectRow({ project }: { project: Project }) {
         <span className="project-color" style={{ backgroundColor: project.color ?? '#1c6b5d' }} />
         <div>
           <strong>{project.name}</strong>
-          <span>{project.archived ? 'Archived' : 'Active'}</span>
+          <span>
+            {project.alias} · {project.archived ? 'Archived' : 'Active'}
+          </span>
         </div>
       </div>
       <div className="row-actions">
@@ -77,8 +79,8 @@ export function ProjectList() {
       </div>
 
       <ProjectForm
-        onSubmit={async ({ name, color }) => {
-          await createProject(name, color)
+        onSubmit={async ({ name, alias, color }) => {
+          await createProject(name, color, alias)
         }}
       />
 

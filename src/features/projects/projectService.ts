@@ -1,7 +1,7 @@
 import { db } from '../../db/db'
 import type { Project } from './projectTypes'
 
-export type ProjectPatch = Partial<Pick<Project, 'name' | 'color' | 'archived'>>
+export type ProjectPatch = Partial<Pick<Project, 'name' | 'alias' | 'color' | 'archived'>>
 
 function normalizeProjectName(name: string) {
   const trimmedName = name.trim()
@@ -11,6 +11,12 @@ function normalizeProjectName(name: string) {
   }
 
   return trimmedName
+}
+
+function normalizeProjectAlias(alias: string | undefined, fallbackName: string) {
+  const trimmedAlias = alias?.trim()
+
+  return trimmedAlias || fallbackName
 }
 
 async function assertUniqueActiveProjectName(name: string, projectId?: string) {
@@ -25,15 +31,17 @@ async function assertUniqueActiveProjectName(name: string, projectId?: string) {
   }
 }
 
-export async function createProject(name: string, color?: string): Promise<string> {
+export async function createProject(name: string, color?: string, alias?: string): Promise<string> {
   const now = new Date().toISOString()
   const trimmedName = normalizeProjectName(name)
+  const trimmedAlias = normalizeProjectAlias(alias, trimmedName)
 
   await assertUniqueActiveProjectName(trimmedName)
 
   const project: Project = {
     id: crypto.randomUUID(),
     name: trimmedName,
+    alias: trimmedAlias,
     color,
     archived: false,
     createdAt: now,
@@ -53,6 +61,10 @@ export async function updateProject(projectId: string, patch: ProjectPatch) {
   }
 
   const nextName = patch.name === undefined ? existing.name : normalizeProjectName(patch.name)
+  const nextAlias =
+    patch.alias === undefined
+      ? normalizeProjectAlias(existing.alias, nextName)
+      : normalizeProjectAlias(patch.alias, nextName)
   const nextArchived = patch.archived ?? existing.archived
 
   if (!nextArchived) {
@@ -62,6 +74,7 @@ export async function updateProject(projectId: string, patch: ProjectPatch) {
   await db.projects.update(projectId, {
     ...patch,
     name: nextName,
+    alias: nextAlias,
     updatedAt: new Date().toISOString(),
   })
 }
@@ -72,7 +85,7 @@ export async function archiveProject(projectId: string) {
 
 export function listActiveProjects() {
   return db.projects
-    .orderBy('name')
+    .orderBy('alias')
     .filter((project) => !project.archived)
     .toArray()
 }

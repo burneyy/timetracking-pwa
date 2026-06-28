@@ -68,8 +68,8 @@ describe('EntryList', () => {
     expect(screen.queryByText('Yesterday')).not.toBeInTheDocument()
   })
 
-  it('resolves archived project names for historical entries', async () => {
-    const projectId = await createProject('Archived Client')
+  it('resolves archived project aliases for historical entries', async () => {
+    const projectId = await createProject('Archived Client', undefined, 'AC')
     await archiveProject(projectId)
 
     await db.timeEntries.add({
@@ -85,7 +85,8 @@ describe('EntryList', () => {
 
     render(<EntryList />)
 
-    await waitFor(() => expect(screen.getByText('Archived Client')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('AC')).toBeInTheDocument())
+    expect(screen.queryByText('Archived Client')).not.toBeInTheDocument()
     expect(screen.queryByText('Unknown project')).not.toBeInTheDocument()
   })
 

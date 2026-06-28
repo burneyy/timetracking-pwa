@@ -6,7 +6,7 @@ import type { Project } from './projectTypes'
 type ProjectFormProps = {
   initialProject?: Project
   onCancel?: () => void
-  onSubmit: (input: { name: string; color?: string }) => Promise<void>
+  onSubmit: (input: { name: string; alias?: string; color?: string }) => Promise<void>
 }
 
 const defaultColor = '#1c6b5d'
@@ -14,12 +14,15 @@ const defaultColor = '#1c6b5d'
 export function ProjectForm({ initialProject, onCancel, onSubmit }: ProjectFormProps) {
   const errorId = useId()
   const [name, setName] = useState(initialProject?.name ?? '')
+  const [alias, setAlias] = useState(initialProject?.alias ?? '')
   const [color, setColor] = useState(initialProject?.color ?? defaultColor)
   const [error, setError] = useState<string>()
   const [saving, setSaving] = useState(false)
+  const aliasPlaceholder = name.trim() || 'Client'
 
   useEffect(() => {
     setName(initialProject?.name ?? '')
+    setAlias(initialProject?.alias ?? '')
     setColor(initialProject?.color ?? defaultColor)
     setError(undefined)
   }, [initialProject])
@@ -30,9 +33,10 @@ export function ProjectForm({ initialProject, onCancel, onSubmit }: ProjectFormP
     setError(undefined)
 
     try {
-      await onSubmit({ name, color })
+      await onSubmit({ name, alias, color })
       if (!initialProject) {
         setName('')
+        setAlias('')
         setColor(defaultColor)
       }
     } catch (error) {
@@ -55,6 +59,19 @@ export function ProjectForm({ initialProject, onCancel, onSubmit }: ProjectFormP
           placeholder="Client project"
           required
           value={name}
+        />
+      </label>
+
+      <label className="field">
+        <span>Alias</span>
+        <input
+          aria-describedby={error ? errorId : undefined}
+          aria-invalid={error ? 'true' : undefined}
+          autoComplete="off"
+          disabled={saving}
+          onChange={(event) => setAlias(event.target.value)}
+          placeholder={aliasPlaceholder}
+          value={alias}
         />
       </label>
 

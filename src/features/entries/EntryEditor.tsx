@@ -86,7 +86,7 @@ export function EntryEditor({ entry, onCancel, onSubmit, projects, submitLabel }
               key={project.id}
               value={project.id}
             >
-              {project.archived ? `${project.name} (archived)` : project.name}
+              {project.archived ? `${project.alias} (archived)` : project.alias}
             </option>
           ))}
         </select>

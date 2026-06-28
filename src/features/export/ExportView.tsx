@@ -238,7 +238,7 @@ export function ExportView() {
         <div className="export-summary">
           <strong>{entryCount} entries ready</strong>
           <p>
-            {range.label}. Exports include local date, project, task, start, end, and duration minutes.
+            {range.label}. Exports include local date, project name, project alias, task, start, end, and duration minutes.
           </p>
         </div>
       ) : (

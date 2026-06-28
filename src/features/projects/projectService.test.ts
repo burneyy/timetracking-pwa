@@ -7,14 +7,41 @@ describe('projectService', () => {
     await db.projects.clear()
   })
 
-  it('creates and lists active projects by name', async () => {
+  it('creates projects with a default alias and lists active projects by alias', async () => {
     await createProject('Website', '#1c6b5d')
-    await createProject('Admin', '#315f9f')
+    await createProject('Admin', '#315f9f', 'Backoffice')
 
     await expect(listActiveProjects()).resolves.toMatchObject([
-      { name: 'Admin', archived: false },
-      { name: 'Website', archived: false },
+      { name: 'Admin', alias: 'Backoffice', archived: false },
+      { name: 'Website', alias: 'Website', archived: false },
     ])
+  })
+
+  it('falls back to the project name when the alias is omitted or blank', async () => {
+    const omittedAliasId = await createProject('Client')
+    const blankAliasId = await createProject('Admin', undefined, '   ')
+
+    await expect(db.projects.get(omittedAliasId)).resolves.toMatchObject({
+      name: 'Client',
+      alias: 'Client',
+    })
+    await expect(db.projects.get(blankAliasId)).resolves.toMatchObject({
+      name: 'Admin',
+      alias: 'Admin',
+    })
+  })
+
+  it('requires an alias at the database boundary', async () => {
+    await expect(
+      db.projects.add({
+        id: 'missing-alias',
+        name: 'Client',
+        alias: '',
+        archived: false,
+        createdAt: '2026-06-26T08:00:00.000Z',
+        updatedAt: '2026-06-26T08:00:00.000Z',
+      }),
+    ).rejects.toThrow('Project alias is required.')
   })
 
   it('requires unique active project names', async () => {
@@ -42,14 +69,26 @@ describe('projectService', () => {
     await expect(updateProject(archivedProjectId, { archived: false })).rejects.toThrow('already exists')
   })
 
-  it('updates name and color', async () => {
+  it('updates name, alias, and color', async () => {
     const projectId = await createProject('Old', '#000000')
 
-    await updateProject(projectId, { name: 'New', color: '#ffffff' })
+    await updateProject(projectId, { name: 'New', alias: 'N', color: '#ffffff' })
 
     await expect(db.projects.get(projectId)).resolves.toMatchObject({
       name: 'New',
+      alias: 'N',
       color: '#ffffff',
+    })
+  })
+
+  it('keeps aliases mandatory when they are cleared during updates', async () => {
+    const projectId = await createProject('Client', undefined, 'C')
+
+    await updateProject(projectId, { name: 'Client Project', alias: ' ' })
+
+    await expect(db.projects.get(projectId)).resolves.toMatchObject({
+      name: 'Client Project',
+      alias: 'Client Project',
     })
   })
 })
