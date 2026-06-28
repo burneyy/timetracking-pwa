@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { EmptyState } from '../../shared/ui/EmptyState'
-import { formatDuration } from '../../shared/dateTime'
+import { calculateDurationMinutes, formatDuration } from '../../shared/dateTime'
 import { listAllProjects } from '../projects/projectService'
 import { EntryRow } from './EntryRow'
 import { listAllEntries, listTodayEntries } from './entryService'
@@ -14,7 +14,8 @@ export function EntryList({ scope = 'today' }: EntryListProps) {
   const entries = useLiveQuery(() => (scope === 'today' ? listTodayEntries() : listAllEntries()), [scope])
   const projects = useLiveQuery(() => listAllProjects(), [])
   const projectsById = useMemo(() => new Map(projects?.map((project) => [project.id, project])), [projects])
-  const totalMinutes = entries?.reduce((total, entry) => total + entry.durationMinutes, 0) ?? 0
+  const totalMinutes =
+    entries?.reduce((total, entry) => total + calculateDurationMinutes(entry.startAt, entry.endAt), 0) ?? 0
   const eyebrow = scope === 'today' ? 'Today' : 'History'
   const title = scope === 'today' ? 'Entries' : 'All entries'
   const emptyTitle = scope === 'today' ? 'No tracked time today' : 'No time entries'

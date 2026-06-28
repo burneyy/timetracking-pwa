@@ -1,6 +1,5 @@
 import { db } from '../../db/db'
 import {
-  calculateDurationMinutes,
   startOfLocalDay,
   startOfNextLocalDay,
 } from '../../shared/dateTime'
@@ -53,7 +52,6 @@ async function validateEntryInput(input: EntryInput, options: ValidateEntryOptio
     task,
     startAt: input.startAt,
     endAt: input.endAt,
-    durationMinutes: calculateDurationMinutes(input.startAt, input.endAt),
   }
 }
 
@@ -106,7 +104,6 @@ export async function createManualEntry(input: EntryInput): Promise<string> {
     task: validated.task,
     startAt: validated.startAt,
     endAt: validated.endAt,
-    durationMinutes: validated.durationMinutes,
     createdAt: now,
     updatedAt: now,
   }
@@ -140,7 +137,6 @@ export async function updateEntry(entryId: string, patch: EntryPatch) {
     task: validated.task,
     startAt: validated.startAt,
     endAt: validated.endAt,
-    durationMinutes: validated.durationMinutes,
     updatedAt: new Date().toISOString(),
   })
 }

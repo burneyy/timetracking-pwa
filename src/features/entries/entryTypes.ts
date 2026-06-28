@@ -4,7 +4,6 @@ export type TimeEntry = {
   task: string
   startAt: string
   endAt: string
-  durationMinutes: number
   createdAt: string
   updatedAt: string
 }

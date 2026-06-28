@@ -25,7 +25,6 @@ describe('entryService', () => {
         task: 'Boundary start',
         startAt: '2026-06-26T00:00:00.000Z',
         endAt: '2026-06-26T00:15:00.000Z',
-        durationMinutes: 15,
         createdAt: '2026-06-26T00:15:00.000Z',
         updatedAt: '2026-06-26T00:15:00.000Z',
       },
@@ -35,7 +34,6 @@ describe('entryService', () => {
         task: 'Morning',
         startAt: '2026-06-26T09:00:00.000Z',
         endAt: '2026-06-26T09:30:00.000Z',
-        durationMinutes: 30,
         createdAt: '2026-06-26T09:30:00.000Z',
         updatedAt: '2026-06-26T09:30:00.000Z',
       },
@@ -45,7 +43,6 @@ describe('entryService', () => {
         task: 'Afternoon',
         startAt: '2026-06-26T13:00:00.000Z',
         endAt: '2026-06-26T13:45:00.000Z',
-        durationMinutes: 45,
         createdAt: '2026-06-26T13:45:00.000Z',
         updatedAt: '2026-06-26T13:45:00.000Z',
       },
@@ -55,7 +52,6 @@ describe('entryService', () => {
         task: 'Yesterday',
         startAt: '2026-06-25T13:00:00.000Z',
         endAt: '2026-06-25T13:45:00.000Z',
-        durationMinutes: 45,
         createdAt: '2026-06-25T13:45:00.000Z',
         updatedAt: '2026-06-25T13:45:00.000Z',
       },
@@ -65,7 +61,6 @@ describe('entryService', () => {
         task: 'Boundary end',
         startAt: '2026-06-27T00:00:00.000Z',
         endAt: '2026-06-27T00:15:00.000Z',
-        durationMinutes: 15,
         createdAt: '2026-06-27T00:15:00.000Z',
         updatedAt: '2026-06-27T00:15:00.000Z',
       },
@@ -84,7 +79,6 @@ describe('entryService', () => {
       task: 'Today',
       startAt: '2026-06-26T10:00:00.000Z',
       endAt: '2026-06-26T10:15:00.000Z',
-      durationMinutes: 15,
       createdAt: '2026-06-26T10:15:00.000Z',
       updatedAt: '2026-06-26T10:15:00.000Z',
     })
@@ -105,7 +99,6 @@ describe('entryService', () => {
     await expect(db.timeEntries.get(entryId)).resolves.toMatchObject({
       projectId,
       task: 'Implementation',
-      durationMinutes: 45,
     })
   })
 
@@ -125,7 +118,6 @@ describe('entryService', () => {
 
     await expect(db.timeEntries.get(entryId)).resolves.toMatchObject({
       task: 'Review',
-      durationMinutes: 60,
     })
     await expect(updateEntry(entryId, { endAt: '2026-06-26T09:00:00.000Z' })).rejects.toThrow(
       'End time',
@@ -174,7 +166,6 @@ describe('entryService', () => {
       task: 'Support',
       startAt: '2026-06-26T10:00:00.000Z',
       endAt: '2026-06-26T10:15:00.000Z',
-      durationMinutes: 15,
       createdAt: '2026-06-26T10:15:00.000Z',
       updatedAt: '2026-06-26T10:15:00.000Z',
     })
@@ -187,7 +178,6 @@ describe('entryService', () => {
     await expect(db.timeEntries.get('archived-entry')).resolves.toMatchObject({
       projectId,
       task: 'Support review',
-      durationMinutes: 45,
     })
   })
 
@@ -215,7 +205,6 @@ describe('entryService', () => {
         task: 'Review',
         startAt: '2026-06-26T11:00:00.000Z',
         endAt: '2026-06-26T11:15:00.000Z',
-        durationMinutes: 15,
         createdAt: '2026-06-26T11:15:00.000Z',
         updatedAt: '2026-06-26T11:15:00.000Z',
       },
@@ -225,7 +214,6 @@ describe('entryService', () => {
         task: 'Implementation',
         startAt: '2026-06-26T12:00:00.000Z',
         endAt: '2026-06-26T12:30:00.000Z',
-        durationMinutes: 30,
         createdAt: '2026-06-26T12:30:00.000Z',
         updatedAt: '2026-06-26T12:30:00.000Z',
       },
@@ -235,7 +223,6 @@ describe('entryService', () => {
         task: 'review',
         startAt: '2026-06-26T13:00:00.000Z',
         endAt: '2026-06-26T13:15:00.000Z',
-        durationMinutes: 15,
         createdAt: '2026-06-26T13:15:00.000Z',
         updatedAt: '2026-06-26T13:15:00.000Z',
       },
@@ -254,7 +241,6 @@ describe('entryService', () => {
         task: ' Implementation ',
         startAt: '2026-06-26T10:00:00.000Z',
         endAt: '2026-06-26T10:30:00.000Z',
-        durationMinutes: 30,
         createdAt: '2026-06-26T10:30:00.000Z',
         updatedAt: '2026-06-26T10:30:00.000Z',
       },
@@ -264,7 +250,6 @@ describe('entryService', () => {
         task: 'Deployment',
         startAt: '2026-06-26T11:00:00.000Z',
         endAt: '2026-06-26T11:30:00.000Z',
-        durationMinutes: 30,
         createdAt: '2026-06-26T11:30:00.000Z',
         updatedAt: '2026-06-26T11:30:00.000Z',
       },
@@ -274,7 +259,6 @@ describe('entryService', () => {
         task: 'Review',
         startAt: '2026-06-26T12:00:00.000Z',
         endAt: '2026-06-26T12:30:00.000Z',
-        durationMinutes: 30,
         createdAt: '2026-06-26T12:30:00.000Z',
         updatedAt: '2026-06-26T12:30:00.000Z',
       },
@@ -284,7 +268,6 @@ describe('entryService', () => {
         task: 'implementation',
         startAt: '2026-06-26T13:00:00.000Z',
         endAt: '2026-06-26T13:30:00.000Z',
-        durationMinutes: 30,
         createdAt: '2026-06-26T13:30:00.000Z',
         updatedAt: '2026-06-26T13:30:00.000Z',
       },

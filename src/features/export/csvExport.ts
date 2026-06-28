@@ -1,4 +1,4 @@
-import { formatDateInput, formatTime } from '../../shared/dateTime'
+import { calculateDurationMinutes, formatDateInput, formatTime } from '../../shared/dateTime'
 import type { TimeEntry } from '../entries/entryTypes'
 import type { Project } from '../projects/projectTypes'
 
@@ -34,7 +34,7 @@ export function exportEntriesToCsv(entries: TimeEntry[], projects: Project[]): s
         entry.task,
         formatLocalTime(entry.startAt),
         formatLocalTime(entry.endAt),
-        entry.durationMinutes,
+        calculateDurationMinutes(entry.startAt, entry.endAt),
       ]
         .map(escapeCsvCell)
         .join(',')

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Pencil, Trash2 } from 'lucide-react'
-import { formatDuration, formatTime } from '../../shared/dateTime'
+import { calculateDurationMinutes, formatDuration, formatTime } from '../../shared/dateTime'
 import { Button } from '../../shared/ui/Button'
 import type { Project } from '../projects/projectTypes'
 import { deleteEntry, updateEntry } from './entryService'
@@ -16,6 +16,7 @@ type EntryRowProps = {
 export function EntryRow({ entry, project, projects = [] }: EntryRowProps) {
   const [editing, setEditing] = useState(false)
   const [error, setError] = useState<string>()
+  const durationMinutes = calculateDurationMinutes(entry.startAt, entry.endAt)
 
   async function handleDelete() {
     setError(undefined)
@@ -60,7 +61,7 @@ export function EntryRow({ entry, project, projects = [] }: EntryRowProps) {
         <span>
           {formatTime(entry.startAt)} - {formatTime(entry.endAt)}
         </span>
-        <strong>{formatDuration(entry.durationMinutes)}</strong>
+        <strong>{formatDuration(durationMinutes)}</strong>
       </div>
       <div className="row-actions">
         <Button aria-label={`Edit ${entry.task}`} onClick={() => setEditing(true)} variant="ghost">

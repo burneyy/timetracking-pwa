@@ -149,7 +149,6 @@ export type TimeEntry = {
   task: string
   startAt: string
   endAt: string
-  durationMinutes: number
   createdAt: string
   updatedAt: string
 }
@@ -158,8 +157,7 @@ export type TimeEntry = {
 Notes:
 
 - `startAt` and `endAt` should be ISO strings.
-- `durationMinutes` is stored redundantly for easier display/export.
-- Duration should be recalculated whenever `startAt` or `endAt` changes.
+- Duration should be calculated from `startAt` and `endAt` when displayed or exported.
 - Manual entries use the same model as timer-created entries.
 
 ### RunningTimer
@@ -238,7 +236,6 @@ export async function startTimer(projectId: string, task: string) {
         task: current.task,
         startAt: current.startedAt,
         endAt: now,
-        durationMinutes: calculateDurationMinutes(current.startedAt, now),
         createdAt: now,
         updatedAt: now
       })
@@ -279,7 +276,6 @@ export async function stopTimer() {
       task: current.task,
       startAt: current.startedAt,
       endAt: now,
-      durationMinutes: calculateDurationMinutes(current.startedAt, now),
       createdAt: now,
       updatedAt: now
     })
@@ -776,5 +772,4 @@ These can be decided during implementation:
 
 5. Should CSV export include ISO timestamps or local formatted times?
    - Recommendation: include local date/time columns plus raw ISO columns later if needed.
-
 

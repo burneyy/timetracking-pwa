@@ -37,7 +37,6 @@ describe('timerService', () => {
         task: 'Implementation',
         startAt: '2026-06-26T10:00:00.000Z',
         endAt: '2026-06-26T10:31:00.000Z',
-        durationMinutes: 31,
       },
     ])
   })
@@ -62,7 +61,6 @@ describe('timerService', () => {
       {
         projectId,
         task: 'Implementation',
-        durationMinutes: 1,
       },
     ])
   })
@@ -77,7 +75,6 @@ describe('timerService', () => {
       {
         projectId,
         task: 'Implementation',
-        durationMinutes: 1,
       },
     ])
   })
@@ -98,7 +95,6 @@ describe('timerService', () => {
       {
         projectId: firstProjectId,
         task: 'Implementation',
-        durationMinutes: 15,
       },
     ])
   })
@@ -150,7 +146,6 @@ describe('timerService', () => {
       task: 'Existing',
       startAt: '2026-06-26T09:00:00.000Z',
       endAt: '2026-06-26T09:15:00.000Z',
-      durationMinutes: 15,
       createdAt: '2026-06-26T09:15:00.000Z',
       updatedAt: '2026-06-26T09:15:00.000Z',
     })

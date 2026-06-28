@@ -26,18 +26,13 @@ async function assertActiveProject(projectId: string) {
   }
 }
 
-function createEntryFromTimer(
-  timer: RunningTimer,
-  endAt: string,
-  durationMinutes = calculateDurationMinutes(timer.startedAt, endAt),
-) {
+function createEntryFromTimer(timer: RunningTimer, endAt: string) {
   return {
     id: crypto.randomUUID(),
     projectId: timer.projectId,
     task: timer.task,
     startAt: timer.startedAt,
     endAt,
-    durationMinutes,
     createdAt: endAt,
     updatedAt: endAt,
   }
@@ -48,7 +43,7 @@ async function saveTimerEntryIfLongEnough(timer: RunningTimer, endAt: string) {
 
   if (durationMinutes < 1) return
 
-  await db.timeEntries.add(createEntryFromTimer(timer, endAt, durationMinutes))
+  await db.timeEntries.add(createEntryFromTimer(timer, endAt))
 }
 
 export async function startTimer(projectId: string, task: string, now = new Date().toISOString()) {
