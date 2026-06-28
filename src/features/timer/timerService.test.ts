@@ -42,6 +42,31 @@ describe('timerService', () => {
     ])
   })
 
+  it('discards a stopped timer that ran for less than one minute', async () => {
+    const projectId = await createProject('Client')
+    await startTimer(projectId, 'Implementation', '2026-06-26T10:00:00.000Z')
+
+    await stopTimer('2026-06-26T10:00:59.999Z')
+
+    await expect(getRunningTimer()).resolves.toBeUndefined()
+    await expect(db.timeEntries.count()).resolves.toBe(0)
+  })
+
+  it('keeps a stopped timer that ran for exactly one minute', async () => {
+    const projectId = await createProject('Client')
+    await startTimer(projectId, 'Implementation', '2026-06-26T10:00:00.000Z')
+
+    await stopTimer('2026-06-26T10:01:00.000Z')
+
+    await expect(db.timeEntries.toArray()).resolves.toMatchObject([
+      {
+        projectId,
+        task: 'Implementation',
+        durationMinutes: 1,
+      },
+    ])
+  })
+
   it('starting a new timer saves the current timer and replaces it', async () => {
     const firstProjectId = await createProject('Client')
     const secondProjectId = await createProject('Admin')
@@ -61,6 +86,21 @@ describe('timerService', () => {
         durationMinutes: 15,
       },
     ])
+  })
+
+  it('discards the current timer when switching before one minute', async () => {
+    const firstProjectId = await createProject('Client')
+    const secondProjectId = await createProject('Admin')
+    await startTimer(firstProjectId, 'Implementation', '2026-06-26T10:00:00.000Z')
+
+    await startTimer(secondProjectId, 'Review', '2026-06-26T10:00:59.999Z')
+
+    await expect(getRunningTimer()).resolves.toMatchObject({
+      projectId: secondProjectId,
+      task: 'Review',
+      startedAt: '2026-06-26T10:00:59.999Z',
+    })
+    await expect(db.timeEntries.count()).resolves.toBe(0)
   })
 
   it('does nothing when stopping with no active timer', async () => {

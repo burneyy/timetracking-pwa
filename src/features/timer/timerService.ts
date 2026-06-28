@@ -2,6 +2,8 @@ import { db } from '../../db/db'
 import { calculateDurationMinutes } from '../../shared/dateTime'
 import type { RunningTimer } from './timerTypes'
 
+const MINIMUM_TIMER_ENTRY_MS = 60_000
+
 function assertTimerInput(projectId: string, task: string) {
   const trimmedProjectId = projectId.trim()
 
@@ -39,6 +41,14 @@ function createEntryFromTimer(timer: RunningTimer, endAt: string) {
   }
 }
 
+async function saveTimerEntryIfLongEnough(timer: RunningTimer, endAt: string) {
+  const elapsedMs = new Date(endAt).getTime() - new Date(timer.startedAt).getTime()
+
+  if (elapsedMs < MINIMUM_TIMER_ENTRY_MS) return
+
+  await db.timeEntries.add(createEntryFromTimer(timer, endAt))
+}
+
 export async function startTimer(projectId: string, task: string, now = new Date().toISOString()) {
   const timerInput = assertTimerInput(projectId, task)
 
@@ -47,7 +57,7 @@ export async function startTimer(projectId: string, task: string, now = new Date
     const current = await db.runningTimer.get('active')
 
     if (current) {
-      await db.timeEntries.add(createEntryFromTimer(current, now))
+      await saveTimerEntryIfLongEnough(current, now)
     }
 
     await db.runningTimer.put({
@@ -65,7 +75,7 @@ export async function stopTimer(now = new Date().toISOString()) {
 
     if (!current) return
 
-    await db.timeEntries.add(createEntryFromTimer(current, now))
+    await saveTimerEntryIfLongEnough(current, now)
     await db.runningTimer.delete('active')
   })
 }
