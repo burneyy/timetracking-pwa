@@ -1,11 +1,13 @@
 import { format, isSameDay, parseISO } from 'date-fns'
 
+const MS_PER_MINUTE = 60_000
+
 export function calculateDurationMinutes(startAt: string, endAt: string): number {
-  const start = new Date(startAt).getTime()
-  const end = new Date(endAt).getTime()
+  const start = Math.floor(new Date(startAt).getTime() / MS_PER_MINUTE) * MS_PER_MINUTE
+  const end = Math.floor(new Date(endAt).getTime() / MS_PER_MINUTE) * MS_PER_MINUTE
   const diffMs = Math.max(0, end - start)
 
-  return Math.round(diffMs / 60_000)
+  return diffMs / MS_PER_MINUTE
 }
 
 export function formatDuration(minutes: number): string {

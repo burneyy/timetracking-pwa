@@ -2,8 +2,6 @@ import { db } from '../../db/db'
 import { calculateDurationMinutes } from '../../shared/dateTime'
 import type { RunningTimer } from './timerTypes'
 
-const MINIMUM_TIMER_ENTRY_MS = 60_000
-
 function assertTimerInput(projectId: string, task: string) {
   const trimmedProjectId = projectId.trim()
 
@@ -28,25 +26,29 @@ async function assertActiveProject(projectId: string) {
   }
 }
 
-function createEntryFromTimer(timer: RunningTimer, endAt: string) {
+function createEntryFromTimer(
+  timer: RunningTimer,
+  endAt: string,
+  durationMinutes = calculateDurationMinutes(timer.startedAt, endAt),
+) {
   return {
     id: crypto.randomUUID(),
     projectId: timer.projectId,
     task: timer.task,
     startAt: timer.startedAt,
     endAt,
-    durationMinutes: calculateDurationMinutes(timer.startedAt, endAt),
+    durationMinutes,
     createdAt: endAt,
     updatedAt: endAt,
   }
 }
 
 async function saveTimerEntryIfLongEnough(timer: RunningTimer, endAt: string) {
-  const elapsedMs = new Date(endAt).getTime() - new Date(timer.startedAt).getTime()
+  const durationMinutes = calculateDurationMinutes(timer.startedAt, endAt)
 
-  if (elapsedMs < MINIMUM_TIMER_ENTRY_MS) return
+  if (durationMinutes < 1) return
 
-  await db.timeEntries.add(createEntryFromTimer(timer, endAt))
+  await db.timeEntries.add(createEntryFromTimer(timer, endAt, durationMinutes))
 }
 
 export async function startTimer(projectId: string, task: string, now = new Date().toISOString()) {

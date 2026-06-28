@@ -12,9 +12,10 @@ import {
 } from './dateTime'
 
 describe('dateTime helpers', () => {
-  it('rounds duration to the nearest minute', () => {
-    expect(calculateDurationMinutes('2026-06-26T10:00:00.000Z', '2026-06-26T10:01:29.000Z')).toBe(1)
-    expect(calculateDurationMinutes('2026-06-26T10:00:00.000Z', '2026-06-26T10:01:31.000Z')).toBe(2)
+  it('calculates duration from displayed minute buckets', () => {
+    expect(calculateDurationMinutes('2026-06-26T21:49:45.000Z', '2026-06-26T21:51:14.000Z')).toBe(2)
+    expect(calculateDurationMinutes('2026-06-26T10:00:59.000Z', '2026-06-26T10:01:01.000Z')).toBe(1)
+    expect(calculateDurationMinutes('2026-06-26T10:00:00.000Z', '2026-06-26T10:01:59.000Z')).toBe(1)
   })
 
   it('guards negative durations', () => {

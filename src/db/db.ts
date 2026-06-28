@@ -2,6 +2,7 @@ import Dexie, { type Table } from 'dexie'
 import type { TimeEntry } from '../features/entries/entryTypes'
 import type { Project } from '../features/projects/projectTypes'
 import type { RunningTimer } from '../features/timer/timerTypes'
+import { calculateDurationMinutes } from '../shared/dateTime'
 
 function assertMandatoryProjectAlias(alias: unknown) {
   if (typeof alias !== 'string' || !alias.trim()) {
@@ -14,8 +15,8 @@ export class AppDatabase extends Dexie {
   timeEntries!: Table<TimeEntry, string>
   runningTimer!: Table<RunningTimer, string>
 
-  constructor() {
-    super('timetracker')
+  constructor(databaseName = 'timetracker') {
+    super(databaseName)
 
     this.version(1).stores({
       projects: 'id, name, archived, createdAt, updatedAt',
@@ -36,6 +37,21 @@ export class AppDatabase extends Dexie {
           transaction.table('runningTimer').clear(),
         ])
       })
+
+    this.version(3)
+      .stores({
+        projects: 'id, name, alias, archived, createdAt, updatedAt',
+        timeEntries: 'id, projectId, task, startAt, endAt, createdAt, updatedAt',
+        runningTimer: 'id',
+      })
+      .upgrade((transaction) =>
+        transaction
+          .table<TimeEntry, string>('timeEntries')
+          .toCollection()
+          .modify((entry) => {
+            entry.durationMinutes = calculateDurationMinutes(entry.startAt, entry.endAt)
+          }),
+      )
 
     this.projects.hook('creating', (_primaryKey, project) => {
       assertMandatoryProjectAlias(project.alias)

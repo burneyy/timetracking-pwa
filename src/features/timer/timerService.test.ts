@@ -67,6 +67,21 @@ describe('timerService', () => {
     ])
   })
 
+  it('keeps a stopped timer that crosses a displayed minute boundary', async () => {
+    const projectId = await createProject('Client')
+    await startTimer(projectId, 'Implementation', '2026-06-26T10:00:59.000Z')
+
+    await stopTimer('2026-06-26T10:01:01.000Z')
+
+    await expect(db.timeEntries.toArray()).resolves.toMatchObject([
+      {
+        projectId,
+        task: 'Implementation',
+        durationMinutes: 1,
+      },
+    ])
+  })
+
   it('starting a new timer saves the current timer and replaces it', async () => {
     const firstProjectId = await createProject('Client')
     const secondProjectId = await createProject('Admin')

@@ -2,7 +2,7 @@ import { Clock } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { Project } from '../projects/projectTypes'
 import type { RunningTimer } from './timerTypes'
-import { formatDuration } from '../../shared/dateTime'
+import { calculateDurationMinutes, formatDuration } from '../../shared/dateTime'
 
 type RunningTimerDisplayProps = {
   projectsById?: Map<string, Project>
@@ -10,12 +10,12 @@ type RunningTimerDisplayProps = {
 }
 
 export function RunningTimerDisplay({ projectsById, runningTimer }: RunningTimerDisplayProps) {
-  const [now, setNow] = useState(() => Date.now())
+  const [now, setNow] = useState(Date.now)
 
   useEffect(() => {
     if (!runningTimer) return undefined
 
-    const intervalId = window.setInterval(() => setNow(Date.now()), 15_000)
+    const intervalId = window.setInterval(() => setNow(Date.now()), 1_000)
     return () => window.clearInterval(intervalId)
   }, [runningTimer])
 
@@ -28,7 +28,8 @@ export function RunningTimerDisplay({ projectsById, runningTimer }: RunningTimer
     )
   }
 
-  const elapsedMinutes = Math.round(Math.max(0, now - new Date(runningTimer.startedAt).getTime()) / 60_000)
+  const displayNow = runningTimer ? Date.now() : now
+  const elapsedMinutes = calculateDurationMinutes(runningTimer.startedAt, new Date(displayNow).toISOString())
   const projectAlias = projectsById?.get(runningTimer.projectId)?.alias ?? 'Unknown project'
   const elapsedDuration = formatDuration(elapsedMinutes)
 
