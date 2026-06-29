@@ -397,9 +397,9 @@ h3 {
 }
 
 .running-display.active {
-  background: var(--nav-active-bg);
-  border-color: var(--accent-active-border);
-  color: var(--accent-active-text);
+  background: var(--running-display-active-bg, var(--nav-active-bg));
+  border-color: var(--running-display-active-border, var(--accent-active-border));
+  color: var(--running-display-active-text, var(--accent-active-text));
 }
 
 .button-danger {

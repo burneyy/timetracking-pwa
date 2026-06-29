@@ -9,6 +9,7 @@ const projectsById = new Map([
       id: 'project-id',
       name: 'Client',
       alias: 'CL',
+      color: '#9bd4c8',
       archived: false,
       createdAt: '',
       updatedAt: '',
@@ -39,6 +40,27 @@ describe('RunningTimerDisplay', () => {
     )
 
     expect(screen.getByRole('timer')).toHaveAccessibleName('Running timer: CL, Implementation, 1m elapsed')
+  })
+
+  it('uses the project color as the active timer background', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-06-26T10:01:01.000Z'))
+
+    render(
+      <RunningTimerDisplay
+        projectsById={projectsById}
+        runningTimer={{
+          id: 'active',
+          projectId: 'project-id',
+          task: 'Implementation',
+          startedAt: '2026-06-26T10:00:59.000Z',
+        }}
+      />,
+    )
+
+    const timer = screen.getByRole('timer')
+    expect(timer.style.getPropertyValue('--running-display-active-bg')).toBe('#9bd4c8')
+    expect(timer.style.getPropertyValue('--running-display-active-border')).toBe('#9bd4c8')
   })
 
   it('uses the current clock immediately when a timer starts after mount', () => {
