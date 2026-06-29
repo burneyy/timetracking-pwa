@@ -19,6 +19,10 @@ export function EntryRow({ entry, project, projects = [] }: EntryRowProps) {
   const durationMinutes = calculateDurationMinutes(entry.startAt, entry.endAt)
 
   async function handleDelete() {
+    if (!window.confirm(`Delete "${entry.task}"? This entry will be permanently removed.`)) {
+      return
+    }
+
     setError(undefined)
 
     try {

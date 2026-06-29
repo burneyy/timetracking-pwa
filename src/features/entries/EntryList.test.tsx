@@ -1,5 +1,6 @@
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
-import { afterEach, describe, expect, it } from 'vitest'
+import userEvent from '@testing-library/user-event'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { db } from '../../db/db'
 import { archiveProject, createProject } from '../projects/projectService'
 import { EntryList } from './EntryList'
@@ -7,6 +8,7 @@ import { EntryList } from './EntryList'
 describe('EntryList', () => {
   afterEach(async () => {
     cleanup()
+    vi.restoreAllMocks()
     await db.timeEntries.clear()
     await db.projects.clear()
   })
@@ -122,5 +124,54 @@ describe('EntryList', () => {
     expect(screen.getByText('Today')).toBeInTheDocument()
     expect(screen.getByText('Yesterday')).toBeInTheDocument()
     expect(screen.getByText('45m')).toBeInTheDocument()
+  })
+
+  it('deletes an entry after confirmation', async () => {
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
+    const projectId = await createProject('Client')
+    const now = new Date()
+
+    await db.timeEntries.add({
+      id: 'entry-to-delete',
+      projectId,
+      task: 'Planning',
+      startAt: now.toISOString(),
+      endAt: new Date(now.getTime() + 30 * 60_000).toISOString(),
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
+    })
+
+    render(<EntryList />)
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Delete Planning' }))
+
+    expect(confirm).toHaveBeenCalledWith('Delete "Planning"? This entry will be permanently removed.')
+    await waitFor(async () => {
+      await expect(db.timeEntries.get('entry-to-delete')).resolves.toBeUndefined()
+    })
+    expect(screen.queryByText('Planning')).not.toBeInTheDocument()
+  })
+
+  it('keeps an entry when delete confirmation is canceled', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(false)
+    const projectId = await createProject('Client')
+    const now = new Date()
+
+    await db.timeEntries.add({
+      id: 'entry-to-keep',
+      projectId,
+      task: 'Planning',
+      startAt: now.toISOString(),
+      endAt: new Date(now.getTime() + 30 * 60_000).toISOString(),
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
+    })
+
+    render(<EntryList />)
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Delete Planning' }))
+
+    await expect(db.timeEntries.get('entry-to-keep')).resolves.toMatchObject({ task: 'Planning' })
+    expect(screen.getByText('Planning')).toBeInTheDocument()
   })
 })
