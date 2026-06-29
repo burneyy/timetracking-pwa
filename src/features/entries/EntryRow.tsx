@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Pencil, Trash2 } from 'lucide-react'
-import { calculateDurationMinutes, formatDuration, formatTime } from '../../shared/dateTime'
+import { calculateDurationMinutes, formatDate, formatDuration, formatTime } from '../../shared/dateTime'
 import { Button } from '../../shared/ui/Button'
 import type { Project } from '../projects/projectTypes'
 import { deleteEntry, updateEntry } from './entryService'
@@ -11,12 +11,14 @@ type EntryRowProps = {
   entry: TimeEntry
   project?: Project
   projects?: Project[]
+  showDate?: boolean
 }
 
-export function EntryRow({ entry, project, projects = [] }: EntryRowProps) {
+export function EntryRow({ entry, project, projects = [], showDate = false }: EntryRowProps) {
   const [editing, setEditing] = useState(false)
   const [error, setError] = useState<string>()
   const durationMinutes = calculateDurationMinutes(entry.startAt, entry.endAt)
+  const timeRange = formatEntryTimeRange(entry, showDate)
 
   async function handleDelete() {
     if (!window.confirm(`Delete "${entry.task}"? This entry will be permanently removed.`)) {
@@ -62,9 +64,7 @@ export function EntryRow({ entry, project, projects = [] }: EntryRowProps) {
         </div>
       </div>
       <div className="entry-time">
-        <span>
-          {formatTime(entry.startAt)} - {formatTime(entry.endAt)}
-        </span>
+        <span>{timeRange}</span>
         <strong>{formatDuration(durationMinutes)}</strong>
       </div>
       <div className="row-actions">
@@ -82,4 +82,18 @@ export function EntryRow({ entry, project, projects = [] }: EntryRowProps) {
       )}
     </li>
   )
+}
+
+function formatEntryTimeRange(entry: TimeEntry, showDate: boolean): string {
+  const startTime = formatTime(entry.startAt)
+  const endTime = formatTime(entry.endAt)
+
+  if (!showDate) return `${startTime} - ${endTime}`
+
+  const startDate = formatDate(entry.startAt)
+  const endDate = formatDate(entry.endAt)
+
+  if (startDate === endDate) return `${startDate}, ${startTime} - ${endTime}`
+
+  return `${startDate}, ${startTime} - ${endDate}, ${endTime}`
 }

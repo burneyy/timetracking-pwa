@@ -2,6 +2,7 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { db } from '../../db/db'
+import { formatDate } from '../../shared/dateTime'
 import { archiveProject, createProject } from '../projects/projectService'
 import { EntryList } from './EntryList'
 
@@ -123,7 +124,30 @@ describe('EntryList', () => {
     expect(within(list).getAllByRole('listitem')).toHaveLength(2)
     expect(screen.getByText('Today')).toBeInTheDocument()
     expect(screen.getByText('Yesterday')).toBeInTheDocument()
+    expect(screen.getByText(`${formatDate(today.toISOString())}, 09:00 - 09:30`)).toBeInTheDocument()
     expect(screen.getByText('45m')).toBeInTheDocument()
+  })
+
+  it('shows both dates for all-entry ranges that cross days', async () => {
+    const projectId = await createProject('Client')
+    const start = new Date(2026, 5, 29, 23, 30, 0, 0)
+    const end = new Date(2026, 5, 30, 0, 15, 0, 0)
+
+    await db.timeEntries.add({
+      id: 'overnight',
+      projectId,
+      task: 'Overnight support',
+      startAt: start.toISOString(),
+      endAt: end.toISOString(),
+      createdAt: start.toISOString(),
+      updatedAt: start.toISOString(),
+    })
+
+    render(<EntryList scope="all" />)
+
+    expect(
+      await screen.findByText(`${formatDate(start.toISOString())}, 23:30 - ${formatDate(end.toISOString())}, 00:15`),
+    ).toBeInTheDocument()
   })
 
   it('deletes an entry after confirmation', async () => {

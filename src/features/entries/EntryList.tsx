@@ -39,6 +39,7 @@ export function EntryList({ scope = 'today' }: EntryListProps) {
               key={entry.id}
               project={projectsById.get(entry.projectId)}
               projects={projects ?? []}
+              showDate={scope === 'all'}
             />
           ))}
         </ul>
