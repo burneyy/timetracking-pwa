@@ -1,6 +1,13 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { db } from '../../db/db'
-import { archiveProject, createProject, listActiveProjects, listAllProjects, updateProject } from './projectService'
+import {
+  archiveProject,
+  createProject,
+  listActiveProjects,
+  listAllProjects,
+  unarchiveProject,
+  updateProject,
+} from './projectService'
 
 describe('projectService', () => {
   afterEach(async () => {
@@ -66,7 +73,17 @@ describe('projectService', () => {
     await archiveProject(archivedProjectId)
     await createProject('Client')
 
-    await expect(updateProject(archivedProjectId, { archived: false })).rejects.toThrow('already exists')
+    await expect(unarchiveProject(archivedProjectId)).rejects.toThrow('already exists')
+  })
+
+  it('unarchives projects when their names do not conflict with active projects', async () => {
+    const projectId = await createProject('Client')
+
+    await archiveProject(projectId)
+    await unarchiveProject(projectId)
+
+    await expect(db.projects.get(projectId)).resolves.toMatchObject({ archived: false })
+    await expect(listActiveProjects()).resolves.toMatchObject([{ name: 'Client', archived: false }])
   })
 
   it('updates name, alias, and color', async () => {

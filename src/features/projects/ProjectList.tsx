@@ -1,9 +1,15 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { Archive, Pencil } from 'lucide-react'
+import { Archive, ArchiveRestore, Pencil } from 'lucide-react'
 import { EmptyState } from '../../shared/ui/EmptyState'
 import { Button } from '../../shared/ui/Button'
-import { archiveProject, createProject, listAllProjects, updateProject } from './projectService'
+import {
+  archiveProject,
+  createProject,
+  listAllProjects,
+  unarchiveProject,
+  updateProject,
+} from './projectService'
 import type { Project } from './projectTypes'
 import { ProjectForm } from './ProjectForm'
 
@@ -12,12 +18,38 @@ function ProjectRow({ project }: { project: Project }) {
   const [error, setError] = useState<string>()
 
   async function handleArchive() {
+    if (
+      !window.confirm(
+        `Archive "${project.name}"? Archived projects are hidden from active timers but historical entries stay intact.`,
+      )
+    ) {
+      return
+    }
+
     setError(undefined)
 
     try {
       await archiveProject(project.id)
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Project could not be archived.')
+    }
+  }
+
+  async function handleUnarchive() {
+    if (
+      !window.confirm(
+        `Unarchive "${project.name}"? It will be available for new timers and entries again.`,
+      )
+    ) {
+      return
+    }
+
+    setError(undefined)
+
+    try {
+      await unarchiveProject(project.id)
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Project could not be unarchived.')
     }
   }
 
@@ -48,12 +80,14 @@ function ProjectRow({ project }: { project: Project }) {
         </div>
       </div>
       <div className="row-actions">
-        {!project.archived && (
-          <Button aria-label={`Edit ${project.name}`} onClick={() => setEditing(true)} variant="ghost">
-            <Pencil size={18} aria-hidden="true" />
+        <Button aria-label={`Edit ${project.name}`} onClick={() => setEditing(true)} variant="ghost">
+          <Pencil size={18} aria-hidden="true" />
+        </Button>
+        {project.archived ? (
+          <Button aria-label={`Unarchive ${project.name}`} onClick={handleUnarchive} variant="ghost">
+            <ArchiveRestore size={18} aria-hidden="true" />
           </Button>
-        )}
-        {!project.archived && (
+        ) : (
           <Button aria-label={`Archive ${project.name}`} onClick={handleArchive} variant="ghost">
             <Archive size={18} aria-hidden="true" />
           </Button>

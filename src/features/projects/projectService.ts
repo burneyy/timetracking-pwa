@@ -83,6 +83,10 @@ export async function archiveProject(projectId: string) {
   await updateProject(projectId, { archived: true })
 }
 
+export async function unarchiveProject(projectId: string) {
+  await updateProject(projectId, { archived: false })
+}
+
 export function listActiveProjects() {
   return db.projects
     .orderBy('alias')
