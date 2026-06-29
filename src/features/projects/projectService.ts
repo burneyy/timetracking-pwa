@@ -19,7 +19,7 @@ function normalizeProjectAlias(alias: string | undefined, fallbackName: string) 
   return trimmedAlias || fallbackName
 }
 
-async function assertUniqueActiveProjectName(name: string, projectId?: string) {
+async function assertUniqueActiveProjectIdentity(name: string, alias: string, projectId?: string) {
   const activeProjects = await listActiveProjects()
   const duplicate = activeProjects.some(
     (project) =>
@@ -29,6 +29,15 @@ async function assertUniqueActiveProjectName(name: string, projectId?: string) {
   if (duplicate) {
     throw new Error('An active project with this name already exists.')
   }
+
+  const duplicateAlias = activeProjects.some(
+    (project) =>
+      project.id !== projectId && project.alias.trim().toLowerCase() === alias.toLowerCase(),
+  )
+
+  if (duplicateAlias) {
+    throw new Error('An active project with this alias already exists.')
+  }
 }
 
 export async function createProject(name: string, color?: string, alias?: string): Promise<string> {
@@ -36,7 +45,7 @@ export async function createProject(name: string, color?: string, alias?: string
   const trimmedName = normalizeProjectName(name)
   const trimmedAlias = normalizeProjectAlias(alias, trimmedName)
 
-  await assertUniqueActiveProjectName(trimmedName)
+  await assertUniqueActiveProjectIdentity(trimmedName, trimmedAlias)
 
   const project: Project = {
     id: crypto.randomUUID(),
@@ -68,7 +77,7 @@ export async function updateProject(projectId: string, patch: ProjectPatch) {
   const nextArchived = patch.archived ?? existing.archived
 
   if (!nextArchived) {
-    await assertUniqueActiveProjectName(nextName, projectId)
+    await assertUniqueActiveProjectIdentity(nextName, nextAlias, projectId)
   }
 
   await db.projects.update(projectId, {

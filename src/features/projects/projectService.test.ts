@@ -57,6 +57,14 @@ describe('projectService', () => {
     await expect(createProject(' client ')).rejects.toThrow('already exists')
   })
 
+  it('requires unique active project aliases', async () => {
+    await createProject('Client A', undefined, 'Client')
+
+    await expect(createProject('Client B', undefined, ' client ')).rejects.toThrow(
+      'An active project with this alias already exists.',
+    )
+  })
+
   it('allows archived projects to keep historical names out of active selectors', async () => {
     const projectId = await createProject('Client')
 
@@ -67,6 +75,18 @@ describe('projectService', () => {
     await expect(listAllProjects()).resolves.toHaveLength(2)
   })
 
+  it('allows archived projects to keep historical aliases out of active selectors', async () => {
+    const projectId = await createProject('Client A', undefined, 'Client')
+
+    await archiveProject(projectId)
+    await createProject('Client B', undefined, 'Client')
+
+    await expect(listActiveProjects()).resolves.toMatchObject([
+      { name: 'Client B', alias: 'Client', archived: false },
+    ])
+    await expect(listAllProjects()).resolves.toHaveLength(2)
+  })
+
   it('allows duplicate names only while the duplicate project is archived', async () => {
     const archivedProjectId = await createProject('Client')
 
@@ -74,6 +94,17 @@ describe('projectService', () => {
     await createProject('Client')
 
     await expect(unarchiveProject(archivedProjectId)).rejects.toThrow('already exists')
+  })
+
+  it('allows duplicate aliases only while the duplicate project is archived', async () => {
+    const archivedProjectId = await createProject('Client A', undefined, 'Client')
+
+    await archiveProject(archivedProjectId)
+    await createProject('Client B', undefined, 'Client')
+
+    await expect(unarchiveProject(archivedProjectId)).rejects.toThrow(
+      'An active project with this alias already exists.',
+    )
   })
 
   it('unarchives projects when their names do not conflict with active projects', async () => {
@@ -96,6 +127,15 @@ describe('projectService', () => {
       alias: 'N',
       color: '#ffffff',
     })
+  })
+
+  it('prevents updates from reusing an active project alias', async () => {
+    await createProject('Client A', undefined, 'Client')
+    const projectId = await createProject('Admin', undefined, 'Backoffice')
+
+    await expect(updateProject(projectId, { alias: ' client ' })).rejects.toThrow(
+      'An active project with this alias already exists.',
+    )
   })
 
   it('keeps aliases mandatory when they are cleared during updates', async () => {

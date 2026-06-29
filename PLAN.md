@@ -367,6 +367,7 @@ Recommended MVP rule:
 
 - Name is required.
 - Name should be unique among non-archived projects.
+- Alias should be unique among non-archived projects.
 
 ### Time Entry
 
