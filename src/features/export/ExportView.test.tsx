@@ -18,6 +18,7 @@ describe('ExportView', () => {
     render(<ExportView />)
 
     expect(screen.getByRole('button', { name: 'Download CSV' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Download TXT' })).toBeDisabled()
     expect(screen.getByText('Preparing export')).toBeInTheDocument()
   })
 
@@ -169,5 +170,45 @@ describe('ExportView', () => {
     expect(text).toContain('End boundary')
     expect(text).not.toContain('Before range')
     expect(text).not.toContain('After range')
+  })
+
+  it('downloads TXT entries grouped by local days', async () => {
+    const projectId = await createProject('Client Project', undefined, 'CLIENT')
+    await db.timeEntries.bulkAdd([
+      {
+        id: 'entry-2',
+        projectId,
+        task: 'Afternoon task',
+        startAt: '2026-04-02T13:00:00.000Z',
+        endAt: '2026-04-02T14:00:00.000Z',
+        createdAt: '2026-04-02T14:00:00.000Z',
+        updatedAt: '2026-04-02T14:00:00.000Z',
+      },
+      {
+        id: 'entry-1',
+        projectId,
+        task: 'Morning task',
+        startAt: '2026-04-01T08:00:00.000Z',
+        endAt: '2026-04-01T09:00:00.000Z',
+        createdAt: '2026-04-01T09:00:00.000Z',
+        updatedAt: '2026-04-01T09:00:00.000Z',
+      },
+    ])
+    const createObjectURL = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:txt')
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined)
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined)
+
+    render(<ExportView />)
+
+    const button = screen.getByRole('button', { name: 'Download TXT' })
+    await waitFor(() => expect(button).toBeEnabled())
+    await userEvent.click(button)
+
+    const blob = createObjectURL.mock.calls[0][0] as Blob
+    const text = await blob.text()
+
+    expect(text).toContain('CLIENT Client Project')
+    expect(text).toContain('*')
+    expect(text.indexOf('Morning task')).toBeLessThan(text.indexOf('Afternoon task'))
   })
 })

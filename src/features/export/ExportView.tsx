@@ -1,4 +1,4 @@
-import { Download } from 'lucide-react'
+import { Download, FileText } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { format } from 'date-fns'
@@ -16,6 +16,7 @@ import { listAllEntries, listEntriesByDateRange } from '../entries/entryService'
 import type { TimeEntry } from '../entries/entryTypes'
 import { listAllProjects } from '../projects/projectService'
 import { downloadCsv, exportEntriesToCsv } from './csvExport'
+import { downloadTxt, exportEntriesToTxt } from './txtExport'
 
 type RangePreset = 'all' | 'today' | 'week' | 'month' | 'custom'
 
@@ -170,11 +171,18 @@ export function ExportView() {
   const hasEntries = entryCount > 0
   const canDownload = isRangeValid && hasEntries && !isLoading
 
-  function handleDownload() {
+  function handleCsvDownload() {
     if (!canDownload || !entries || !projects) return
 
     const csv = exportEntriesToCsv(entries, projects)
     downloadCsv(`timetracker-${range.fileSlug}.csv`, csv)
+  }
+
+  function handleTxtDownload() {
+    if (!canDownload || !entries || !projects) return
+
+    const txt = exportEntriesToTxt(entries, projects)
+    downloadTxt(`timetracker-${range.fileSlug}.txt`, txt)
   }
 
   return (
@@ -182,7 +190,7 @@ export function ExportView() {
       <div className="section-header">
         <div>
           <p className="eyebrow">Export</p>
-          <h2>CSV export</h2>
+          <h2>Export</h2>
         </div>
         <div className="export-actions">
           <label className="field export-range-field">
@@ -198,9 +206,13 @@ export function ExportView() {
               <option value="custom">Custom</option>
             </select>
           </label>
-          <Button disabled={!canDownload} onClick={handleDownload}>
+          <Button disabled={!canDownload} onClick={handleCsvDownload}>
             <Download size={18} aria-hidden="true" />
             Download CSV
+          </Button>
+          <Button disabled={!canDownload} onClick={handleTxtDownload}>
+            <FileText size={18} aria-hidden="true" />
+            Download TXT
           </Button>
         </div>
       </div>
@@ -238,11 +250,11 @@ export function ExportView() {
         <div className="export-summary">
           <strong>{entryCount} entries ready</strong>
           <p>
-            {range.label}. Exports include local date, project name, project alias, task, start, end, and duration minutes.
+            {range.label}. CSV includes detailed columns; TXT lists project aliases and groups entries by local days.
           </p>
         </div>
       ) : (
-        <EmptyState title="No exportable entries found" message="Change the range or create entries before downloading a CSV file." />
+        <EmptyState title="No exportable entries found" message="Change the range or create entries before downloading a file." />
       )}
     </section>
   )
