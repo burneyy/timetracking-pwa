@@ -5,11 +5,15 @@ import type { RunningTimer } from '../features/timer/timerTypes'
 
 const DATABASE_NAME = 'timetracker'
 const DEVELOPMENT_SCHEMA_RESET_KEY = 'timetracker.schemaReset'
-const DEVELOPMENT_SCHEMA_RESET_ID = 'remove-duration-minutes'
+const DEVELOPMENT_SCHEMA_RESET_ID = 'project-alias-no-spaces'
 
 function assertMandatoryProjectAlias(alias: unknown) {
   if (typeof alias !== 'string' || !alias.trim()) {
     throw new Error('Project alias is required.')
+  }
+
+  if (alias.includes(' ')) {
+    throw new Error('Project alias cannot contain spaces.')
   }
 }
 

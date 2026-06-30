@@ -8,7 +8,7 @@ describe('ProjectForm', () => {
     cleanup()
   })
 
-  it('shows the project name as the alias placeholder while alias is empty', async () => {
+  it('shows the project name with underscores as the alias placeholder while alias is empty', async () => {
     render(<ProjectForm onSubmit={vi.fn()} />)
 
     const nameInput = screen.getByRole('textbox', { name: 'Name' })
@@ -18,7 +18,7 @@ describe('ProjectForm', () => {
 
     await userEvent.type(nameInput, 'Client Project')
 
-    expect(aliasInput).toHaveAttribute('placeholder', 'Client Project')
+    expect(aliasInput).toHaveAttribute('placeholder', 'Client_Project')
     expect(aliasInput).toHaveValue('')
   })
 })

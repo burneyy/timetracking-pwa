@@ -18,7 +18,7 @@ export function ProjectForm({ initialProject, onCancel, onSubmit }: ProjectFormP
   const [color, setColor] = useState(initialProject?.color ?? defaultColor)
   const [error, setError] = useState<string>()
   const [saving, setSaving] = useState(false)
-  const aliasPlaceholder = name.trim() || 'Client'
+  const aliasPlaceholder = name.trim().replaceAll(' ', '_') || 'Client'
 
   useEffect(() => {
     setName(initialProject?.name ?? '')

@@ -24,17 +24,17 @@ describe('projectService', () => {
     ])
   })
 
-  it('falls back to the project name when the alias is omitted or blank', async () => {
-    const omittedAliasId = await createProject('Client')
-    const blankAliasId = await createProject('Admin', undefined, '   ')
+  it('falls back to the project name with spaces replaced when the alias is omitted or blank', async () => {
+    const omittedAliasId = await createProject('Client Project')
+    const blankAliasId = await createProject('Admin Project', undefined, '   ')
 
     await expect(db.projects.get(omittedAliasId)).resolves.toMatchObject({
-      name: 'Client',
-      alias: 'Client',
+      name: 'Client Project',
+      alias: 'Client_Project',
     })
     await expect(db.projects.get(blankAliasId)).resolves.toMatchObject({
-      name: 'Admin',
-      alias: 'Admin',
+      name: 'Admin Project',
+      alias: 'Admin_Project',
     })
   })
 
@@ -49,6 +49,25 @@ describe('projectService', () => {
         updatedAt: '2026-06-26T08:00:00.000Z',
       }),
     ).rejects.toThrow('Project alias is required.')
+  })
+
+  it('prevents project aliases with spaces at the database boundary', async () => {
+    await expect(
+      db.projects.add({
+        id: 'spaced-alias',
+        name: 'Client Project',
+        alias: 'Client Project',
+        archived: false,
+        createdAt: '2026-06-26T08:00:00.000Z',
+        updatedAt: '2026-06-26T08:00:00.000Z',
+      }),
+    ).rejects.toThrow('Project alias cannot contain spaces.')
+  })
+
+  it('prevents project aliases with spaces', async () => {
+    await expect(createProject('Client Project', undefined, 'Client Project')).rejects.toThrow(
+      'Project alias cannot contain spaces.',
+    )
   })
 
   it('requires unique active project names', async () => {
@@ -145,7 +164,7 @@ describe('projectService', () => {
 
     await expect(db.projects.get(projectId)).resolves.toMatchObject({
       name: 'Client Project',
-      alias: 'Client Project',
+      alias: 'Client_Project',
     })
   })
 })

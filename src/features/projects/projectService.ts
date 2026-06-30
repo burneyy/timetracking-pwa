@@ -14,9 +14,13 @@ function normalizeProjectName(name: string) {
 }
 
 function normalizeProjectAlias(alias: string | undefined, fallbackName: string) {
-  const trimmedAlias = alias?.trim()
+  const trimmedAlias = alias?.trim() || fallbackName.replaceAll(' ', '_')
 
-  return trimmedAlias || fallbackName
+  if (trimmedAlias.includes(' ')) {
+    throw new Error('Project alias cannot contain spaces.')
+  }
+
+  return trimmedAlias
 }
 
 async function assertUniqueActiveProjectIdentity(name: string, alias: string, projectId?: string) {
