@@ -3,11 +3,15 @@ import { listActiveProjects } from '../projects/projectService'
 import { EntryEditor } from './EntryEditor'
 import { createManualEntry } from './entryService'
 
-export function EntryForm() {
+type EntryFormProps = {
+  embedded?: boolean
+}
+
+export function EntryForm({ embedded = false }: EntryFormProps) {
   const projects = useLiveQuery(() => listActiveProjects(), []) ?? []
 
-  return (
-    <section className="panel">
+  const content = (
+    <>
       <div className="section-header">
         <div>
           <p className="eyebrow">Manual</p>
@@ -21,6 +25,16 @@ export function EntryForm() {
         projects={projects}
         submitLabel="Create"
       />
+    </>
+  )
+
+  if (embedded) {
+    return <div>{content}</div>
+  }
+
+  return (
+    <section className="panel">
+      {content}
     </section>
   )
 }

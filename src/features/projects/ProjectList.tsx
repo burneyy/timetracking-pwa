@@ -118,7 +118,7 @@ export function ProjectList() {
         }}
       />
 
-      <div className="project-groups">
+      <div className="panel-divider project-groups">
         <div>
           <h3>Active projects</h3>
           {activeProjects.length === 0 ? (

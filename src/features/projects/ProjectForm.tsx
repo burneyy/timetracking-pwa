@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useId, useState } from 'react'
+import { type CSSProperties, type FormEvent, useEffect, useId, useState } from 'react'
 import { Save } from 'lucide-react'
 import { Button } from '../../shared/ui/Button'
 import type { Project } from './projectTypes'
@@ -32,6 +32,7 @@ export function ProjectForm({ initialProject, onCancel, onSubmit }: ProjectFormP
   const aliasPlaceholder = name.trim().replaceAll(' ', '_') || 'Client'
   const normalizedColor = color.toLowerCase()
   const isCustomColor = !commonProjectColors.some((projectColor) => projectColor.value === normalizedColor)
+  const customColorPreview = isCustomColor ? color : '#000000'
 
   useEffect(() => {
     setName(initialProject?.name ?? '')
@@ -110,6 +111,7 @@ export function ProjectForm({ initialProject, onCancel, onSubmit }: ProjectFormP
             className="custom-color-button"
             data-selected={isCustomColor ? 'true' : undefined}
             htmlFor={colorInputId}
+            style={{ '--selected-project-color': customColorPreview } as CSSProperties}
             title="Custom"
           >
             <input

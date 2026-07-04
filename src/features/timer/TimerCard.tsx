@@ -9,7 +9,11 @@ import { getRunningTimer, startTimer, stopTimer } from './timerService'
 import { listAllProjects, listActiveProjects } from '../projects/projectService'
 import { listTaskSuggestions } from '../entries/entryService'
 
-export function TimerCard() {
+type TimerCardProps = {
+  embedded?: boolean
+}
+
+export function TimerCard({ embedded = false }: TimerCardProps) {
   const activeProjects = useLiveQuery(() => listActiveProjects(), [])
   const allProjects = useLiveQuery(() => listAllProjects(), [])
   const runningTimer = useLiveQuery(() => getRunningTimer(), [])
@@ -54,8 +58,8 @@ export function TimerCard() {
     }
   }
 
-  return (
-    <section className="timer-card">
+  const content = (
+    <>
       <div className="timer-card-header">
         <div>
           <p className="eyebrow">Timer</p>
@@ -86,6 +90,16 @@ export function TimerCard() {
           </p>
         )}
       </form>
+    </>
+  )
+
+  if (embedded) {
+    return <div>{content}</div>
+  }
+
+  return (
+    <section className="timer-card">
+      {content}
     </section>
   )
 }

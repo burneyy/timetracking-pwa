@@ -74,19 +74,23 @@ function App() {
   const renderActiveView = () => {
     if (activeView === 'timer') {
       return (
-        <>
-          <TimerCard />
-          <EntryList />
-        </>
+        <section className="panel page-panel">
+          <TimerCard embedded />
+          <div className="panel-divider">
+            <EntryList embedded />
+          </div>
+        </section>
       )
     }
 
     if (activeView === 'entries') {
       return (
-        <>
-          <EntryForm />
-          <EntryList scope="all" />
-        </>
+        <section className="panel page-panel">
+          <EntryForm embedded />
+          <div className="panel-divider">
+            <EntryList embedded scope="all" />
+          </div>
+        </section>
       )
     }
 

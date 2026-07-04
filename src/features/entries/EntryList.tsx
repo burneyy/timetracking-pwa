@@ -7,10 +7,11 @@ import { EntryRow } from './EntryRow'
 import { listAllEntries, listTodayEntries } from './entryService'
 
 type EntryListProps = {
+  embedded?: boolean
   scope?: 'today' | 'all'
 }
 
-export function EntryList({ scope = 'today' }: EntryListProps) {
+export function EntryList({ embedded = false, scope = 'today' }: EntryListProps) {
   const entries = useLiveQuery(() => (scope === 'today' ? listTodayEntries() : listAllEntries()), [scope])
   const projects = useLiveQuery(() => listAllProjects(), [])
   const projectsById = useMemo(() => new Map(projects?.map((project) => [project.id, project])), [projects])
@@ -22,8 +23,8 @@ export function EntryList({ scope = 'today' }: EntryListProps) {
   const emptyMessage =
     scope === 'today' ? 'Timer-created entries will appear here.' : 'Create a manual entry or stop a timer.'
 
-  return (
-    <section className="panel">
+  const content = (
+    <>
       <div className="section-header">
         <div>
           <p className="eyebrow">{eyebrow}</p>
@@ -46,6 +47,16 @@ export function EntryList({ scope = 'today' }: EntryListProps) {
       ) : (
         <EmptyState title={emptyTitle} message={emptyMessage} />
       )}
+    </>
+  )
+
+  if (embedded) {
+    return <div>{content}</div>
+  }
+
+  return (
+    <section className="panel">
+      {content}
     </section>
   )
 }

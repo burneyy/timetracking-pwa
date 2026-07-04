@@ -454,7 +454,12 @@ h3 {
 .custom-color-button {
   align-items: center;
   background:
-    radial-gradient(circle at center, var(--surface) 0 26%, transparent 28%),
+    radial-gradient(
+      circle at center,
+      var(--selected-project-color) 0 22%,
+      var(--surface) 24% 29%,
+      transparent 31%
+    ),
     conic-gradient(#b94646, #d18c3a, #4f7d3a, #1c6b5d, #315f9f, #6d4cc2, #b34a7d, #b94646);
   border: 2px solid var(--swatch-border);
   border-radius: 999px;
@@ -497,6 +502,18 @@ h3 {
   padding: 20px;
 }
 
+.page-panel,
+.export-panel {
+  display: grid;
+  gap: 24px;
+}
+
+.panel-divider,
+.export-backup-section {
+  border-top: 1px solid var(--border-soft);
+  padding-top: 24px;
+}
+
 .export-actions {
   align-items: end;
   display: flex;
@@ -529,6 +546,33 @@ h3 {
 
 .export-summary p {
   margin-bottom: 0;
+}
+
+.backup-options {
+  display: flex;
+  margin-bottom: 18px;
+}
+
+.backup-preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.checkbox-field {
+  align-items: center;
+  color: var(--muted-strong);
+  display: inline-flex;
+  font-size: 0.9rem;
+  font-weight: 700;
+  gap: 8px;
+}
+
+.checkbox-field input {
+  accent-color: var(--accent);
+  height: 18px;
+  width: 18px;
 }
 
 .project-form {

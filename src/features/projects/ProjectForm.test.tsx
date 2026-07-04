@@ -43,11 +43,14 @@ describe('ProjectForm', () => {
 
     await userEvent.type(screen.getByRole('textbox', { name: 'Name' }), 'Client')
     const customColorInput = screen.getByLabelText('Custom project color')
+    const customColorButton = customColorInput.closest('.custom-color-button')
 
+    expect(customColorButton).toHaveStyle('--selected-project-color: #000000')
     fireEvent.change(customColorInput, {
       target: { value: '#bada55' },
     })
-    expect(customColorInput.closest('.custom-color-button')).toHaveAttribute('data-selected', 'true')
+    expect(customColorButton).toHaveAttribute('data-selected', 'true')
+    expect(customColorButton).toHaveStyle('--selected-project-color: #bada55')
     await userEvent.click(screen.getByRole('button', { name: 'Create' }))
 
     await waitFor(() => {
