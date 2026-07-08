@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { type FormEvent, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { Archive, ArchiveRestore, Pencil } from 'lucide-react'
+import { Archive, ArchiveRestore, Pencil, PinOff, Plus } from 'lucide-react'
 import { EmptyState } from '../../shared/ui/EmptyState'
 import { Button } from '../../shared/ui/Button'
+import { listPinnedProjectTasks, pinProjectTask, unpinProjectTask } from '../tasks/taskService'
 import {
   archiveProject,
   createProject,
@@ -12,6 +13,81 @@ import {
 } from './projectService'
 import type { Project } from './projectTypes'
 import { ProjectForm } from './ProjectForm'
+
+function PinnedTaskManager({ project }: { project: Project }) {
+  const pinnedTasks = useLiveQuery(() => listPinnedProjectTasks(project.id), [project.id]) ?? []
+  const [taskTitle, setTaskTitle] = useState('')
+  const [error, setError] = useState<string>()
+  const [saving, setSaving] = useState(false)
+
+  async function handlePinTask(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setError(undefined)
+    setSaving(true)
+
+    try {
+      await pinProjectTask(project.id, taskTitle)
+      setTaskTitle('')
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Task could not be pinned.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleUnpinTask(taskId: string) {
+    setError(undefined)
+    setSaving(true)
+
+    try {
+      await unpinProjectTask(taskId)
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Task could not be unpinned.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="project-task-manager">
+      <form className="project-task-form" onSubmit={handlePinTask}>
+        <label className="field">
+          <span>Pinned suggestions</span>
+          <input
+            disabled={saving || project.archived}
+            onChange={(event) => setTaskTitle(event.target.value)}
+            placeholder="Weekly Sync"
+            value={taskTitle}
+          />
+        </label>
+        <Button disabled={saving || project.archived || !taskTitle.trim()} type="submit" variant="secondary">
+          <Plus size={18} aria-hidden="true" />
+          Pin
+        </Button>
+      </form>
+      {pinnedTasks.length > 0 ? (
+        <ul className="task-chip-list">
+          {pinnedTasks.map((task) => (
+            <li key={task.id}>
+              <span>{task.title}</span>
+              <Button
+                aria-label={`Unpin ${task.title}`}
+                disabled={saving || project.archived}
+                onClick={() => handleUnpinTask(task.id)}
+                variant="ghost"
+              >
+                <PinOff size={16} aria-hidden="true" />
+              </Button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="project-task-empty">No pinned suggestions</p>
+      )}
+      {error && <p className="form-error">{error}</p>}
+    </div>
+  )
+}
 
 function ProjectRow({ project }: { project: Project }) {
   const [editing, setEditing] = useState(false)
@@ -94,6 +170,7 @@ function ProjectRow({ project }: { project: Project }) {
         )}
       </div>
       {error && <p className="form-error">{error}</p>}
+      <PinnedTaskManager project={project} />
     </li>
   )
 }

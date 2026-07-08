@@ -1,11 +1,12 @@
 import Dexie, { type Table } from 'dexie'
 import type { TimeEntry } from '../features/entries/entryTypes'
 import type { Project } from '../features/projects/projectTypes'
+import type { ProjectTask } from '../features/tasks/taskTypes'
 import type { RunningTimer } from '../features/timer/timerTypes'
 
 const DATABASE_NAME = 'timetracker'
 const DEVELOPMENT_SCHEMA_RESET_KEY = 'timetracker.schemaReset'
-const DEVELOPMENT_SCHEMA_RESET_ID = 'project-alias-no-spaces'
+const DEVELOPMENT_SCHEMA_RESET_ID = 'project-task-suggestions'
 
 function assertMandatoryProjectAlias(alias: unknown) {
   if (typeof alias !== 'string' || !alias.trim()) {
@@ -19,6 +20,7 @@ function assertMandatoryProjectAlias(alias: unknown) {
 
 export class AppDatabase extends Dexie {
   projects!: Table<Project, string>
+  tasks!: Table<ProjectTask, string>
   timeEntries!: Table<TimeEntry, string>
   runningTimer!: Table<RunningTimer, string>
 
@@ -27,6 +29,7 @@ export class AppDatabase extends Dexie {
 
     this.version(1).stores({
       projects: 'id, name, alias, archived, createdAt, updatedAt',
+      tasks: 'id, projectId, title, createdAt, updatedAt',
       timeEntries: 'id, projectId, task, startAt, endAt, createdAt, updatedAt',
       runningTimer: 'id',
     })

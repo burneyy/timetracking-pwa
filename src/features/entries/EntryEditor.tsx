@@ -1,8 +1,11 @@
 import { type FormEvent, useId, useState } from 'react'
 import { Save } from 'lucide-react'
+import { useLiveQuery } from 'dexie-react-hooks'
 import { formatDateInput, toIsoFromDateTimeLocal } from '../../shared/dateTime'
 import { Button } from '../../shared/ui/Button'
 import type { Project } from '../projects/projectTypes'
+import { TaskInput } from '../timer/TaskInput'
+import { listTaskSuggestions } from '../tasks/taskService'
 import type { TimeEntry } from './entryTypes'
 
 type EntryEditorProps = {
@@ -38,6 +41,7 @@ export function EntryEditor({ entry, onCancel, onSubmit, projects, submitLabel }
   const [endAt, setEndAt] = useState(entry ? formatDateInput(entry.endAt) : defaults.endAt)
   const [error, setError] = useState<string>()
   const [saving, setSaving] = useState(false)
+  const taskSuggestions = useLiveQuery(() => listTaskSuggestions(projectId, task), [projectId, task])
   const hasProjects = projects.length > 0
   const errorDescription = error ? errorId : undefined
 
@@ -92,18 +96,13 @@ export function EntryEditor({ entry, onCancel, onSubmit, projects, submitLabel }
         </select>
       </label>
 
-      <label className="field">
-        <span>Task</span>
-        <input
-          aria-describedby={errorDescription}
-          aria-invalid={error ? 'true' : undefined}
-          disabled={saving}
-          onChange={(event) => setTask(event.target.value)}
-          placeholder="Implementation"
-          required
-          value={task}
-        />
-      </label>
+      <TaskInput
+        disabled={saving || !hasProjects}
+        hasProject={Boolean(projectId)}
+        onChange={setTask}
+        suggestions={taskSuggestions}
+        value={task}
+      />
 
       <label className="field">
         <span>Start</span>

@@ -16,6 +16,7 @@ import {
 import { listAllEntries, listEntriesByDateRange } from '../entries/entryService'
 import type { TimeEntry } from '../entries/entryTypes'
 import { listAllProjects } from '../projects/projectService'
+import { listAllProjectTasks } from '../tasks/taskService'
 import {
   downloadJson,
   exportBackupToJson,
@@ -206,12 +207,13 @@ export function ExportView() {
   )
   const backupEntries = useLiveQuery(() => listAllEntries(), [])
   const projects = useLiveQuery(() => listAllProjects(), [])
+  const tasks = useLiveQuery(() => listAllProjectTasks(), [])
   const isRangeValid = range.kind !== 'invalid'
   const isLoading = isRangeValid && (!entries || !projects)
   const entryCount = entries?.length ?? 0
   const hasEntries = entryCount > 0
   const canDownload = isRangeValid && hasEntries && !isLoading
-  const canDownloadBackup = Boolean(projects && backupEntries)
+  const canDownloadBackup = Boolean(projects && backupEntries && tasks)
 
   function handleCsvDownload() {
     if (!canDownload || !entries || !projects) return
@@ -228,9 +230,9 @@ export function ExportView() {
   }
 
   function handleBackupDownload() {
-    if (!projects || !backupEntries) return
+    if (!projects || !backupEntries || !tasks) return
 
-    const json = exportBackupToJson(projects, backupEntries)
+    const json = exportBackupToJson(projects, backupEntries, tasks)
     downloadJson(`timetracker-backup-${format(new Date(), 'yyyy-MM-dd')}.json`, json)
   }
 

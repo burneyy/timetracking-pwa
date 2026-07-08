@@ -9,6 +9,7 @@ describe('ProjectList', () => {
   afterEach(async () => {
     cleanup()
     vi.restoreAllMocks()
+    await db.tasks.clear()
     await db.projects.clear()
   })
 
@@ -84,5 +85,28 @@ describe('ProjectList', () => {
 
     expect(await screen.findByText('An active project with this name already exists.')).toBeInTheDocument()
     await expect(db.projects.get(archivedProjectId)).resolves.toMatchObject({ archived: true })
+  })
+
+  it('pins and unpins project task suggestions', async () => {
+    const projectId = await createProject('Client')
+
+    render(<ProjectList />)
+
+    await userEvent.type(await screen.findByLabelText('Pinned suggestions'), 'Weekly Sync')
+    await userEvent.click(screen.getByRole('button', { name: 'Pin' }))
+
+    expect(await screen.findByText('Weekly Sync')).toBeInTheDocument()
+    await expect(db.tasks.where('projectId').equals(projectId).toArray()).resolves.toMatchObject([
+      {
+        title: 'Weekly Sync',
+        pinned: true,
+      },
+    ])
+
+    await userEvent.click(screen.getByRole('button', { name: 'Unpin Weekly Sync' }))
+
+    await waitFor(async () => {
+      await expect(db.tasks.count()).resolves.toBe(0)
+    })
   })
 })

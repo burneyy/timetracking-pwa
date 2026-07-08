@@ -2,6 +2,7 @@ import { db } from '../../db/db'
 import { assertValidDateRange } from '../../shared/validation'
 import type { TimeEntry } from '../entries/entryTypes'
 import type { Project } from '../projects/projectTypes'
+import type { ProjectTask } from '../tasks/taskTypes'
 
 const BACKUP_FORMAT = 'timetracker-backup'
 const BACKUP_VERSION = 1
@@ -10,6 +11,7 @@ export type BackupDocument = {
   exportedAt: string
   format: typeof BACKUP_FORMAT
   projects: Project[]
+  tasks: ProjectTask[]
   timeEntries: TimeEntry[]
   version: typeof BACKUP_VERSION
 }
@@ -30,6 +32,7 @@ export type BackupImportResult = {
 type BackupImportPlan = {
   entriesToImport: TimeEntry[]
   projectsToImport: Project[]
+  tasksToImport: ProjectTask[]
   result: BackupImportResult
 }
 
@@ -123,6 +126,30 @@ function normalizeEntry(entry: unknown, index: number): TimeEntry {
   return normalized
 }
 
+function normalizeTask(task: unknown, index: number): ProjectTask {
+  if (!isRecord(task)) {
+    throw new Error(`Backup tasks[${index}] must be an object.`)
+  }
+
+  const normalized: ProjectTask = {
+    id: assertString(task.id, `tasks[${index}].id`).trim(),
+    projectId: assertString(task.projectId, `tasks[${index}].projectId`).trim(),
+    title: assertString(task.title, `tasks[${index}].title`).trim(),
+    pinned: assertBoolean(task.pinned, `tasks[${index}].pinned`),
+    createdAt: assertString(task.createdAt, `tasks[${index}].createdAt`),
+    updatedAt: assertString(task.updatedAt, `tasks[${index}].updatedAt`),
+  }
+
+  if (!normalized.id) throw new Error(`Backup tasks[${index}].id is required.`)
+  if (!normalized.projectId) throw new Error(`Backup tasks[${index}].projectId is required.`)
+  if (!normalized.title) throw new Error(`Backup tasks[${index}].title is required.`)
+
+  assertIsoDate(normalized.createdAt, `tasks[${index}].createdAt`)
+  assertIsoDate(normalized.updatedAt, `tasks[${index}].updatedAt`)
+
+  return normalized
+}
+
 function projectAliasKey(project: Pick<Project, 'alias'>) {
   return project.alias.trim().toLowerCase()
 }
@@ -133,6 +160,10 @@ function projectNameKey(project: Pick<Project, 'name'>) {
 
 function entryFingerprint(entry: Pick<TimeEntry, 'endAt' | 'projectId' | 'startAt' | 'task'>) {
   return [entry.projectId, entry.task.trim().toLowerCase(), entry.startAt, entry.endAt].join('\u001f')
+}
+
+function taskFingerprint(task: Pick<ProjectTask, 'projectId' | 'title'>) {
+  return [task.projectId, task.title.trim().toLowerCase()].join('\u001f')
 }
 
 function createEmptyImportResult(): BackupImportResult {
@@ -150,6 +181,7 @@ function buildBackupImportPlan(
   backup: BackupDocument,
   existingProjects: Project[],
   existingEntries: TimeEntry[],
+  existingTasks: ProjectTask[],
   options: BackupImportOptions,
 ): BackupImportPlan {
   const result = createEmptyImportResult()
@@ -160,6 +192,9 @@ function buildBackupImportPlan(
   const projectsByName = new Map(existingProjects.map((project) => [projectNameKey(project), project]))
   const projectsToImport: Project[] = []
   const entriesToImport: TimeEntry[] = []
+  const tasksToImport: ProjectTask[] = []
+  const existingTaskIds = new Set(existingTasks.map((task) => task.id))
+  const existingTaskFingerprints = new Set(existingTasks.map(taskFingerprint))
 
   for (const project of backup.projects) {
     const matchingAlias = projectsByAlias.get(projectAliasKey(project))
@@ -187,8 +222,32 @@ function buildBackupImportPlan(
     result.importedProjects += 1
   }
 
+  for (const task of backup.tasks) {
+    const projectId = projectIdMap.get(task.projectId)
+
+    if (!projectId || conflictedProjectIds.has(task.projectId)) continue
+
+    const fingerprint = taskFingerprint({ ...task, projectId })
+
+    if (existingTaskFingerprints.has(fingerprint)) {
+      continue
+    }
+
+    let id = task.id
+
+    while (existingTaskIds.has(id)) {
+      id = crypto.randomUUID()
+    }
+
+    const importedTask = { ...task, id, projectId }
+
+    tasksToImport.push(importedTask)
+    existingTaskIds.add(importedTask.id)
+    existingTaskFingerprints.add(fingerprint)
+  }
+
   if (options.projectsOnly) {
-    return { entriesToImport, projectsToImport, result }
+    return { entriesToImport, projectsToImport, tasksToImport, result }
   }
 
   const existingEntryIds = new Set(existingEntries.map((entry) => entry.id))
@@ -216,12 +275,13 @@ function buildBackupImportPlan(
     result.importedEntries += 1
   }
 
-  return { entriesToImport, projectsToImport, result }
+  return { entriesToImport, projectsToImport, tasksToImport, result }
 }
 
 export function createBackupDocument(
   projects: Project[],
   timeEntries: TimeEntry[],
+  tasks: ProjectTask[] = [],
   exportedAt = new Date().toISOString(),
 ): BackupDocument {
   return {
@@ -229,12 +289,13 @@ export function createBackupDocument(
     version: BACKUP_VERSION,
     exportedAt,
     projects,
+    tasks,
     timeEntries,
   }
 }
 
-export function exportBackupToJson(projects: Project[], timeEntries: TimeEntry[]): string {
-  return `${JSON.stringify(createBackupDocument(projects, timeEntries), null, 2)}\n`
+export function exportBackupToJson(projects: Project[], timeEntries: TimeEntry[], tasks: ProjectTask[] = []): string {
+  return `${JSON.stringify(createBackupDocument(projects, timeEntries, tasks), null, 2)}\n`
 }
 
 export function parseBackupJson(json: string): BackupDocument {
@@ -265,8 +326,21 @@ export function parseBackupJson(json: string): BackupDocument {
     throw new Error('Backup timeEntries must be an array.')
   }
 
+  if (parsed.tasks !== undefined && !Array.isArray(parsed.tasks)) {
+    throw new Error('Backup tasks must be an array.')
+  }
+
   const projects = parsed.projects.map(normalizeProject)
   const projectIds = new Set(projects.map((project) => project.id))
+  const tasks = (parsed.tasks ?? []).map((task, index) => {
+    const normalized = normalizeTask(task, index)
+
+    if (!projectIds.has(normalized.projectId)) {
+      throw new Error(`Backup tasks[${index}].projectId does not match a backup project.`)
+    }
+
+    return normalized
+  })
   const timeEntries = parsed.timeEntries.map((entry, index) => {
     const normalized = normalizeEntry(entry, index)
 
@@ -282,6 +356,7 @@ export function parseBackupJson(json: string): BackupDocument {
     version: BACKUP_VERSION,
     exportedAt,
     projects,
+    tasks,
     timeEntries,
   }
 }
@@ -290,11 +365,12 @@ export async function previewBackupDocument(
   backup: BackupDocument,
   options: BackupImportOptions = {},
 ): Promise<BackupImportResult> {
-  return db.transaction('r', db.projects, db.timeEntries, async () => {
+  return db.transaction('r', db.projects, db.tasks, db.timeEntries, async () => {
     const existingProjects = await db.projects.toArray()
     const existingEntries = options.projectsOnly ? [] : await db.timeEntries.toArray()
+    const existingTasks = await db.tasks.toArray()
 
-    return buildBackupImportPlan(backup, existingProjects, existingEntries, options).result
+    return buildBackupImportPlan(backup, existingProjects, existingEntries, existingTasks, options).result
   })
 }
 
@@ -309,10 +385,11 @@ export async function importBackupDocument(
   backup: BackupDocument,
   options: BackupImportOptions = {},
 ): Promise<BackupImportResult> {
-  return db.transaction('rw', db.projects, db.timeEntries, async () => {
+  return db.transaction('rw', db.projects, db.tasks, db.timeEntries, async () => {
     const existingProjects = await db.projects.toArray()
     const existingEntries = options.projectsOnly ? [] : await db.timeEntries.toArray()
-    const plan = buildBackupImportPlan(backup, existingProjects, existingEntries, options)
+    const existingTasks = await db.tasks.toArray()
+    const plan = buildBackupImportPlan(backup, existingProjects, existingEntries, existingTasks, options)
 
     if (plan.projectsToImport.length > 0) {
       await db.projects.bulkAdd(plan.projectsToImport)
@@ -320,6 +397,10 @@ export async function importBackupDocument(
 
     if (plan.entriesToImport.length > 0) {
       await db.timeEntries.bulkAdd(plan.entriesToImport)
+    }
+
+    if (plan.tasksToImport.length > 0) {
+      await db.tasks.bulkAdd(plan.tasksToImport)
     }
 
     return plan.result

@@ -7,7 +7,7 @@ import { RunningTimerDisplay } from './RunningTimerDisplay'
 import { TaskInput } from './TaskInput'
 import { getRunningTimer, startTimer, stopTimer } from './timerService'
 import { listAllProjects, listActiveProjects } from '../projects/projectService'
-import { listTaskSuggestions } from '../entries/entryService'
+import { listTaskSuggestions } from '../tasks/taskService'
 
 type TimerCardProps = {
   embedded?: boolean
@@ -21,7 +21,7 @@ export function TimerCard({ embedded = false }: TimerCardProps) {
   const [task, setTask] = useState('')
   const [error, setError] = useState<string>()
   const [saving, setSaving] = useState(false)
-  const taskSuggestions = useLiveQuery(() => listTaskSuggestions(projectId), [projectId]) ?? []
+  const taskSuggestions = useLiveQuery(() => listTaskSuggestions(projectId, task), [projectId, task])
   const projectsById = useMemo(() => new Map(allProjects?.map((project) => [project.id, project])), [allProjects])
   const hasProjects = (activeProjects?.length ?? 0) > 0
 
@@ -72,6 +72,7 @@ export function TimerCard({ embedded = false }: TimerCardProps) {
         <ProjectSelect disabled={saving} onChange={setProjectId} value={projectId} />
         <TaskInput
           disabled={saving || !hasProjects}
+          hasProject={Boolean(projectId)}
           onChange={setTask}
           suggestions={taskSuggestions}
           value={task}

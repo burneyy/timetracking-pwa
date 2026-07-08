@@ -356,6 +356,78 @@ h3 {
   padding: 8px 10px;
 }
 
+.task-picker {
+  position: relative;
+}
+
+.task-suggestion-menu {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  box-shadow: var(--panel-shadow);
+  display: grid;
+  gap: 8px;
+  left: 0;
+  max-height: 320px;
+  min-width: min(420px, 100%);
+  overflow-y: auto;
+  padding: 8px;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 30;
+}
+
+.task-suggestion-group {
+  display: grid;
+  gap: 4px;
+}
+
+.task-suggestion-group p,
+.task-suggestion-empty {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  margin: 0;
+  padding: 4px 6px;
+  text-transform: uppercase;
+}
+
+.task-suggestion-empty {
+  text-transform: none;
+}
+
+.task-suggestion-option {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  color: var(--app-text);
+  display: grid;
+  gap: 8px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  min-height: 38px;
+  padding: 7px 8px;
+  text-align: left;
+  width: 100%;
+}
+
+.task-suggestion-option:hover,
+.task-suggestion-option:focus-visible {
+  background: var(--accent-soft-bg);
+}
+
+.task-suggestion-option span {
+  overflow-wrap: anywhere;
+}
+
+.task-suggestion-option small {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 .button {
   align-items: center;
   border: 1px solid transparent;
@@ -641,6 +713,59 @@ h3 {
   padding: 10px;
 }
 
+.project-task-manager {
+  border-top: 1px solid var(--border-soft);
+  display: grid;
+  gap: 10px;
+  grid-column: 1 / -1;
+  padding-top: 10px;
+}
+
+.project-task-form {
+  align-items: end;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(180px, 1fr) auto;
+}
+
+.task-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.task-chip-list li {
+  align-items: center;
+  background: var(--accent-soft-bg);
+  border: 1px solid var(--accent-soft-border);
+  border-radius: 999px;
+  color: var(--accent-soft-text);
+  display: inline-flex;
+  gap: 4px;
+  min-height: 34px;
+  min-width: 0;
+  padding: 3px 4px 3px 10px;
+}
+
+.task-chip-list span {
+  max-width: 260px;
+  overflow-wrap: anywhere;
+}
+
+.task-chip-list .button {
+  min-height: 28px;
+  padding: 4px 6px;
+}
+
+.project-task-empty {
+  color: var(--muted);
+  font-size: 0.86rem;
+  margin: 0;
+}
+
 .entry-row {
   align-items: center;
   background: var(--surface-raised);
@@ -790,6 +915,7 @@ h3 {
   .section-header,
   .timer-form-grid,
   .project-form,
+  .project-task-form,
   .entry-editor,
   .export-custom-range {
     align-items: stretch;

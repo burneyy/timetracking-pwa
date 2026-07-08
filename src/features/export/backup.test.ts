@@ -1,7 +1,8 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { db } from '../../db/db'
 import type { TimeEntry } from '../entries/entryTypes'
 import type { Project } from '../projects/projectTypes'
+import type { ProjectTask } from '../tasks/taskTypes'
 import { exportBackupToJson, importBackupJson, previewBackupJson } from './backup'
 
 function sortById<T extends { id: string }>(items: T[]) {
@@ -10,6 +11,8 @@ function sortById<T extends { id: string }>(items: T[]) {
 
 describe('backup', () => {
   afterEach(async () => {
+    vi.restoreAllMocks()
+    await db.tasks.clear()
     await db.timeEntries.clear()
     await db.projects.clear()
   })
@@ -55,12 +58,28 @@ describe('backup', () => {
         updatedAt: '2026-05-21T12:30:00.000Z',
       },
     ]
+    const tasks: ProjectTask[] = [
+      {
+        id: 'task-weekly-sync',
+        projectId: 'project-active',
+        title: 'Weekly Sync',
+        pinned: true,
+        createdAt: '2026-06-26T08:00:00.000Z',
+        updatedAt: '2026-06-26T08:00:00.000Z',
+      },
+    ]
 
     await db.projects.bulkAdd(projects)
     await db.timeEntries.bulkAdd(entries)
+    await db.tasks.bulkAdd(tasks)
 
-    const backupJson = exportBackupToJson(await db.projects.toArray(), await db.timeEntries.toArray())
+    const backupJson = exportBackupToJson(
+      await db.projects.toArray(),
+      await db.timeEntries.toArray(),
+      await db.tasks.toArray(),
+    )
 
+    await db.tasks.clear()
     await db.timeEntries.clear()
     await db.projects.clear()
 
@@ -74,6 +93,7 @@ describe('backup', () => {
     })
     await expect(db.projects.toArray().then(sortById)).resolves.toEqual(sortById(projects))
     await expect(db.timeEntries.toArray().then(sortById)).resolves.toEqual(sortById(entries))
+    await expect(db.tasks.toArray().then(sortById)).resolves.toEqual(sortById(tasks))
   })
 
   it('previews an import without writing local data', async () => {
@@ -150,6 +170,70 @@ describe('backup', () => {
       projectId: 'local-client',
       task: 'Implementation',
     })
+  })
+
+  it('remaps imported pinned task suggestions to matched projects and new task ids', async () => {
+    const localProject: Project = {
+      id: 'local-client',
+      name: 'Local Client',
+      alias: 'CLIENT',
+      color: '#315f9f',
+      archived: false,
+      createdAt: '2026-06-01T08:00:00.000Z',
+      updatedAt: '2026-06-01T08:00:00.000Z',
+    }
+    const localTask: ProjectTask = {
+      id: 'task-collision',
+      projectId: 'local-client',
+      title: 'Weekly Sync',
+      pinned: true,
+      createdAt: '2026-06-01T08:00:00.000Z',
+      updatedAt: '2026-06-01T08:00:00.000Z',
+    }
+    await db.projects.add(localProject)
+    await db.tasks.add(localTask)
+    vi.spyOn(crypto, 'randomUUID').mockReturnValue('00000000-0000-4000-8000-000000000001')
+
+    const backupJson = exportBackupToJson(
+      [
+        {
+          id: 'backup-client',
+          name: 'Backup Client',
+          alias: 'client',
+          color: '#1c6b5d',
+          archived: false,
+          createdAt: '2026-06-26T08:00:00.000Z',
+          updatedAt: '2026-06-26T08:00:00.000Z',
+        },
+      ],
+      [],
+      [
+        {
+          id: 'task-collision',
+          projectId: 'backup-client',
+          title: 'Roadmap Review',
+          pinned: true,
+          createdAt: '2026-06-26T08:00:00.000Z',
+          updatedAt: '2026-06-26T08:00:00.000Z',
+        },
+      ],
+    )
+
+    await expect(importBackupJson(backupJson)).resolves.toMatchObject({
+      importedProjects: 0,
+      matchedProjects: 1,
+    })
+    await expect(db.tasks.toArray().then(sortById)).resolves.toEqual(sortById([
+      localTask,
+      {
+        id: '00000000-0000-4000-8000-000000000001',
+        projectId: 'local-client',
+        title: 'Roadmap Review',
+        pinned: true,
+        createdAt: '2026-06-26T08:00:00.000Z',
+        updatedAt: '2026-06-26T08:00:00.000Z',
+      },
+    ]))
   })
 
   it('skips duplicate imported entries by id or entry fingerprint', async () => {
