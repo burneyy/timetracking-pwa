@@ -113,8 +113,6 @@ function normalizeEntry(entry: unknown, index: number): TimeEntry {
 
   if (!normalized.id) throw new Error(`Backup timeEntries[${index}].id is required.`)
   if (!normalized.projectId) throw new Error(`Backup timeEntries[${index}].projectId is required.`)
-  if (!normalized.task) throw new Error(`Backup timeEntries[${index}].task is required.`)
-
   const range = assertValidDateRange(normalized.startAt, normalized.endAt)
   if (!range.valid) {
     throw new Error(`Backup timeEntries[${index}] has an invalid date range.`)

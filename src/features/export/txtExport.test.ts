@@ -125,6 +125,17 @@ UNUSED_ACTIVE Unused Active Project
     expect(txt).toContain('08:30 - 11:54 PROJ_ALIAS Review second line')
   })
 
+  it('exports project-only entries without trailing whitespace', () => {
+    const txt = exportEntriesToTxt(
+      [{ ...entries[0], task: '' }],
+      [projects[1]],
+      { locale: 'de-DE' },
+    )
+
+    expect(txt).toContain('08:30 - 11:54 PROJ_ALIAS\n')
+    expect(txt).not.toMatch(/ +\n/)
+  })
+
   it('downloads TXT with a UTF-8 BOM', async () => {
     const click = vi.fn()
     const append = vi.spyOn(document.body, 'append')

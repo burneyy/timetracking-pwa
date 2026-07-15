@@ -45,6 +45,7 @@ export function RunningTimerDisplay({ projectsById, runningTimer }: RunningTimer
   const elapsedMinutes = calculateDurationMinutes(runningTimer.startedAt, new Date(displayNow).toISOString())
   const project = projectsById?.get(runningTimer.projectId)
   const projectAlias = project?.alias ?? 'Unknown project'
+  const taskLabel = runningTimer.task.trim() || 'No task'
   const elapsedDuration = formatDuration(elapsedMinutes)
   const runningTimerStyle = project?.color
     ? ({
@@ -56,14 +57,14 @@ export function RunningTimerDisplay({ projectsById, runningTimer }: RunningTimer
 
   return (
     <div
-      aria-label={`Running timer: ${projectAlias}, ${runningTimer.task}, ${elapsedDuration} elapsed`}
+      aria-label={`Running timer: ${projectAlias}, ${taskLabel}, ${elapsedDuration} elapsed`}
       className="running-display active"
       role="timer"
       style={runningTimerStyle}
     >
       <Clock size={20} aria-hidden="true" />
       <span>
-        {projectAlias} · {runningTimer.task} · {elapsedDuration}
+        {projectAlias} · {taskLabel} · {elapsedDuration}
       </span>
     </div>
   )

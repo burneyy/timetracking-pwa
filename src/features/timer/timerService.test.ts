@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { db } from '../../db/db'
 import { archiveProject, createProject } from '../projects/projectService'
-import { getRunningTimer, startTimer, stopTimer } from './timerService'
+import { getRunningTimer, startTimer, stopTimer, updateRunningTimer } from './timerService'
 
 describe('timerService', () => {
   afterEach(async () => {
@@ -11,7 +11,7 @@ describe('timerService', () => {
     await db.projects.clear()
   })
 
-  it('starts a running timer with a required project and task', async () => {
+  it('starts a running timer and trims an optional task', async () => {
     const projectId = await createProject('Client')
 
     await startTimer(projectId, ' Implementation ', '2026-06-26T10:00:00.000Z')
@@ -20,6 +20,18 @@ describe('timerService', () => {
       id: 'active',
       projectId,
       task: 'Implementation',
+      startedAt: '2026-06-26T10:00:00.000Z',
+    })
+  })
+
+  it('starts a project timer without a task', async () => {
+    const projectId = await createProject('Client')
+
+    await startTimer(projectId, '   ', '2026-06-26T10:00:00.000Z')
+
+    await expect(getRunningTimer()).resolves.toMatchObject({
+      projectId,
+      task: '',
       startedAt: '2026-06-26T10:00:00.000Z',
     })
   })
@@ -120,10 +132,29 @@ describe('timerService', () => {
     await expect(db.timeEntries.count()).resolves.toBe(0)
   })
 
-  it('requires a project and non-empty task', async () => {
+  it('requires a project', async () => {
     await expect(startTimer('', 'Task')).rejects.toThrow('Project is required')
     await expect(startTimer('   ', 'Task')).rejects.toThrow('Project is required')
-    await expect(startTimer('project-id', '   ')).rejects.toThrow('Task is required')
+  })
+
+  it('updates a running timer without changing its start time', async () => {
+    const firstProjectId = await createProject('Client')
+    const secondProjectId = await createProject('Admin')
+    await startTimer(firstProjectId, '', '2026-06-26T10:00:00.000Z')
+
+    await updateRunningTimer(secondProjectId, ' Review ')
+
+    await expect(getRunningTimer()).resolves.toMatchObject({
+      projectId: secondProjectId,
+      task: 'Review',
+      startedAt: '2026-06-26T10:00:00.000Z',
+    })
+  })
+
+  it('rejects updates when no timer is running', async () => {
+    const projectId = await createProject('Client')
+
+    await expect(updateRunningTimer(projectId, 'Review')).rejects.toThrow('No timer is running')
   })
 
   it('requires an active project', async () => {

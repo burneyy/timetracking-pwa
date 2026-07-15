@@ -4,6 +4,7 @@ import {
   archiveProject,
   createProject,
   listActiveProjects,
+  listActiveProjectsByRecentUsage,
   listAllProjects,
   unarchiveProject,
   updateProject,
@@ -11,6 +12,7 @@ import {
 
 describe('projectService', () => {
   afterEach(async () => {
+    await db.timeEntries.clear()
     await db.projects.clear()
   })
 
@@ -21,6 +23,39 @@ describe('projectService', () => {
     await expect(listActiveProjects()).resolves.toMatchObject([
       { name: 'Admin', alias: 'Backoffice', archived: false },
       { name: 'Website', alias: 'Website', archived: false },
+    ])
+  })
+
+  it('lists used projects by most recent entry before unused projects', async () => {
+    const alphaId = await createProject('Alpha')
+    const betaId = await createProject('Beta')
+    await createProject('Gamma')
+
+    await db.timeEntries.bulkAdd([
+      {
+        id: 'alpha-entry',
+        projectId: alphaId,
+        task: '',
+        startAt: '2026-06-26T09:00:00.000Z',
+        endAt: '2026-06-26T09:30:00.000Z',
+        createdAt: '2026-06-26T09:30:00.000Z',
+        updatedAt: '2026-06-26T09:30:00.000Z',
+      },
+      {
+        id: 'beta-entry',
+        projectId: betaId,
+        task: 'Review',
+        startAt: '2026-06-26T11:00:00.000Z',
+        endAt: '2026-06-26T11:30:00.000Z',
+        createdAt: '2026-06-26T11:30:00.000Z',
+        updatedAt: '2026-06-26T11:30:00.000Z',
+      },
+    ])
+
+    await expect(listActiveProjectsByRecentUsage()).resolves.toMatchObject([
+      { name: 'Beta' },
+      { name: 'Alpha' },
+      { name: 'Gamma' },
     ])
   })
 

@@ -101,6 +101,22 @@ describe('entryService', () => {
     })
   })
 
+  it('allows project-only entries without a task', async () => {
+    const projectId = await createProject('Client')
+
+    const entryId = await createManualEntry({
+      projectId,
+      task: '   ',
+      startAt: '2026-06-26T10:00:00.000Z',
+      endAt: '2026-06-26T10:30:00.000Z',
+    })
+
+    await expect(db.timeEntries.get(entryId)).resolves.toMatchObject({
+      projectId,
+      task: '',
+    })
+  })
+
   it('updates entries and rejects invalid ranges', async () => {
     const projectId = await createProject('Client')
     const entryId = await createManualEntry({

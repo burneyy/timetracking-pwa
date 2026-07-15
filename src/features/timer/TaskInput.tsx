@@ -5,7 +5,9 @@ import type { TaskSuggestion, TaskSuggestionGroups } from '../tasks/taskTypes'
 type TaskInputProps = {
   disabled?: boolean
   hasProject?: boolean
+  label?: string
   onChange?: (task: string) => void
+  placeholder?: string
   suggestions?: TaskSuggestionGroups
   value?: string
 }
@@ -68,7 +70,9 @@ function SuggestionGroup({
 export function TaskInput({
   disabled = false,
   hasProject = true,
+  label = 'Task (optional)',
   onChange,
+  placeholder = 'Add a task',
   suggestions = { matches: [], pinned: [], recent: [] },
   value = '',
 }: TaskInputProps) {
@@ -104,7 +108,7 @@ export function TaskInput({
       }}
     >
       <label id={descriptionId} htmlFor={inputId}>
-        Task
+        {label}
       </label>
       <input
         aria-describedby={descriptionId}
@@ -118,7 +122,7 @@ export function TaskInput({
           setOpen(true)
         }}
         onFocus={() => setOpen(true)}
-        placeholder="Implementation"
+        placeholder={placeholder}
         value={value}
       />
       {open && hasProject && (

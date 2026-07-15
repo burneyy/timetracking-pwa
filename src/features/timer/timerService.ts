@@ -2,20 +2,14 @@ import { db } from '../../db/db'
 import { calculateDurationMinutes } from '../../shared/dateTime'
 import type { RunningTimer } from './timerTypes'
 
-function assertTimerInput(projectId: string, task: string) {
+function normalizeTimerInput(projectId: string, task: string) {
   const trimmedProjectId = projectId.trim()
 
   if (!trimmedProjectId) {
     throw new Error('Project is required.')
   }
 
-  const trimmedTask = task.trim()
-
-  if (!trimmedTask) {
-    throw new Error('Task is required.')
-  }
-
-  return { projectId: trimmedProjectId, task: trimmedTask }
+  return { projectId: trimmedProjectId, task: task.trim() }
 }
 
 async function assertActiveProject(projectId: string) {
@@ -46,8 +40,8 @@ async function saveTimerEntryIfLongEnough(timer: RunningTimer, endAt: string) {
   await db.timeEntries.add(createEntryFromTimer(timer, endAt))
 }
 
-export async function startTimer(projectId: string, task: string, now = new Date().toISOString()) {
-  const timerInput = assertTimerInput(projectId, task)
+export async function startTimer(projectId: string, task = '', now = new Date().toISOString()) {
+  const timerInput = normalizeTimerInput(projectId, task)
 
   await db.transaction('rw', db.projects, db.runningTimer, db.timeEntries, async () => {
     await assertActiveProject(timerInput.projectId)
@@ -62,6 +56,30 @@ export async function startTimer(projectId: string, task: string, now = new Date
       projectId: timerInput.projectId,
       task: timerInput.task,
       startedAt: now,
+    })
+  })
+}
+
+export async function updateRunningTimer(projectId: string, task: string) {
+  const timerInput = normalizeTimerInput(projectId, task)
+
+  await db.transaction('rw', db.projects, db.runningTimer, async () => {
+    const current = await db.runningTimer.get('active')
+
+    if (!current) {
+      throw new Error('No timer is running.')
+    }
+
+    const project = await db.projects.get(timerInput.projectId)
+
+    if (!project || (project.archived && project.id !== current.projectId)) {
+      throw new Error('Project must be active.')
+    }
+
+    await db.runningTimer.put({
+      ...current,
+      projectId: timerInput.projectId,
+      task: timerInput.task,
     })
   })
 }

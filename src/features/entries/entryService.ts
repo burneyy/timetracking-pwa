@@ -27,10 +27,6 @@ async function validateEntryInput(input: EntryInput, options: ValidateEntryOptio
     throw new Error('Project is required.')
   }
 
-  if (!task) {
-    throw new Error('Task is required.')
-  }
-
   const project = await db.projects.get(projectId)
 
   if (!project) {

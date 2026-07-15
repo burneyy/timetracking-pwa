@@ -107,6 +107,36 @@ export function listActiveProjects() {
     .toArray()
 }
 
+export async function listActiveProjectsByRecentUsage() {
+  const [projects, entries] = await Promise.all([
+    listActiveProjects(),
+    db.timeEntries.toArray(),
+  ])
+  const lastUsedByProject = new Map<string, string>()
+
+  for (const entry of entries) {
+    const lastUsedAt = lastUsedByProject.get(entry.projectId)
+
+    if (!lastUsedAt || entry.startAt > lastUsedAt) {
+      lastUsedByProject.set(entry.projectId, entry.startAt)
+    }
+  }
+
+  return projects.sort((left, right) => {
+    const leftLastUsed = lastUsedByProject.get(left.id)
+    const rightLastUsed = lastUsedByProject.get(right.id)
+
+    if (leftLastUsed && rightLastUsed && leftLastUsed !== rightLastUsed) {
+      return rightLastUsed.localeCompare(leftLastUsed)
+    }
+
+    if (leftLastUsed) return -1
+    if (rightLastUsed) return 1
+
+    return left.alias.localeCompare(right.alias, undefined, { sensitivity: 'base' })
+  })
+}
+
 export function listAllProjects() {
   return db.projects.orderBy('name').toArray()
 }

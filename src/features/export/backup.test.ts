@@ -123,6 +123,32 @@ describe('backup', () => {
     await expect(db.projects.count()).resolves.toBe(0)
   })
 
+  it('accepts project-only entries without a task', async () => {
+    const project: Project = {
+      id: 'project-client',
+      name: 'Client',
+      alias: 'CLIENT',
+      color: '#1c6b5d',
+      archived: false,
+      createdAt: '2026-06-26T08:00:00.000Z',
+      updatedAt: '2026-06-26T08:00:00.000Z',
+    }
+    const entry: TimeEntry = {
+      id: 'entry-project-only',
+      projectId: project.id,
+      task: '',
+      startAt: '2026-06-26T09:00:00.000Z',
+      endAt: '2026-06-26T10:00:00.000Z',
+      createdAt: '2026-06-26T10:00:00.000Z',
+      updatedAt: '2026-06-26T10:00:00.000Z',
+    }
+
+    await expect(importBackupJson(exportBackupToJson([project], [entry]))).resolves.toMatchObject({
+      importedEntries: 1,
+    })
+    await expect(db.timeEntries.get(entry.id)).resolves.toEqual(entry)
+  })
+
   it('matches projects by alias, keeps local project details, and remaps imported entries', async () => {
     const localProject: Project = {
       id: 'local-client',

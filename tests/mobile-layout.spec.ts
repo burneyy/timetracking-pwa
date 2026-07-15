@@ -65,6 +65,8 @@ test.describe('mobile layout', () => {
   })
 
   test('renders form controls large enough to avoid mobile focus zoom', async ({ page }) => {
+    let controlCount = 0
+
     for (const view of views) {
       await selectView(page, view)
 
@@ -74,8 +76,10 @@ test.describe('mobile layout', () => {
           controls.map((control) => Number.parseFloat(getComputedStyle(control).fontSize)),
         )
 
-      expect(fontSizes.length).toBeGreaterThan(0)
+      controlCount += fontSizes.length
       expect(fontSizes.every((fontSize) => fontSize >= 16)).toBe(true)
     }
+
+    expect(controlCount).toBeGreaterThan(0)
   })
 })

@@ -63,6 +63,25 @@ describe('RunningTimerDisplay', () => {
     expect(timer.style.getPropertyValue('--running-display-active-border')).toBe('#9bd4c8')
   })
 
+  it('labels a running project-only timer without a task', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-06-26T10:01:01.000Z'))
+
+    render(
+      <RunningTimerDisplay
+        projectsById={projectsById}
+        runningTimer={{
+          id: 'active',
+          projectId: 'project-id',
+          task: '',
+          startedAt: '2026-06-26T10:00:00.000Z',
+        }}
+      />,
+    )
+
+    expect(screen.getByRole('timer')).toHaveAccessibleName('Running timer: CL, No task, 1m elapsed')
+  })
+
   it('uses the current clock immediately when a timer starts after mount', () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-06-26T10:00:01.000Z'))

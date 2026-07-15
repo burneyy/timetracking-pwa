@@ -89,6 +89,26 @@ describe('EntryList', () => {
     expect(screen.queryByText('Unknown project')).not.toBeInTheDocument()
   })
 
+  it('labels project-only entries without a task', async () => {
+    const projectId = await createProject('Client')
+    const now = new Date()
+
+    await db.timeEntries.add({
+      id: 'project-only',
+      projectId,
+      task: '',
+      startAt: now.toISOString(),
+      endAt: new Date(now.getTime() + 15 * 60_000).toISOString(),
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
+    })
+
+    render(<EntryList />)
+
+    expect(await screen.findByText('No task')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Edit No task' })).toBeInTheDocument()
+  })
+
   it('can render all entries instead of only today', async () => {
     const projectId = await createProject('Client')
     const today = new Date()

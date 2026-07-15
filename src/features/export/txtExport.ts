@@ -64,9 +64,11 @@ export function exportEntriesToTxt(
       currentDateKey = dateKey
     }
 
-    bodyLines.push(
-      `${formatTime(entry.startAt)} - ${formatTime(entry.endAt)} ${oneLine(project?.alias ?? 'Unknown project')} ${oneLine(entry.task)}`,
-    )
+    bodyLines.push([
+      `${formatTime(entry.startAt)} - ${formatTime(entry.endAt)}`,
+      oneLine(project?.alias ?? 'Unknown project'),
+      oneLine(entry.task),
+    ].filter(Boolean).join(' '))
   }
 
   return `${[headerLines.join('\n'), bodyLines.join('\n')].filter(Boolean).join('\n\n')}\n`

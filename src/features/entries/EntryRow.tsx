@@ -19,9 +19,10 @@ export function EntryRow({ entry, project, projects = [], showDate = false }: En
   const [error, setError] = useState<string>()
   const durationMinutes = calculateDurationMinutes(entry.startAt, entry.endAt)
   const timeRange = formatEntryTimeRange(entry, showDate)
+  const taskLabel = entry.task.trim() || 'No task'
 
   async function handleDelete() {
-    if (!window.confirm(`Delete "${entry.task}"? This entry will be permanently removed.`)) {
+    if (!window.confirm(`Delete "${taskLabel}"? This entry will be permanently removed.`)) {
       return
     }
 
@@ -60,7 +61,7 @@ export function EntryRow({ entry, project, projects = [], showDate = false }: En
         />
         <div>
           <strong>{project?.alias ?? 'Unknown project'}</strong>
-          <span>{entry.task}</span>
+          <span>{taskLabel}</span>
         </div>
       </div>
       <div className="entry-time">
@@ -68,10 +69,10 @@ export function EntryRow({ entry, project, projects = [], showDate = false }: En
         <strong>{formatDuration(durationMinutes)}</strong>
       </div>
       <div className="row-actions">
-        <Button aria-label={`Edit ${entry.task}`} onClick={() => setEditing(true)} variant="ghost">
+        <Button aria-label={`Edit ${taskLabel}`} onClick={() => setEditing(true)} variant="ghost">
           <Pencil size={18} aria-hidden="true" />
         </Button>
-        <Button aria-label={`Delete ${entry.task}`} onClick={handleDelete} variant="ghost">
+        <Button aria-label={`Delete ${taskLabel}`} onClick={handleDelete} variant="ghost">
           <Trash2 size={18} aria-hidden="true" />
         </Button>
       </div>
